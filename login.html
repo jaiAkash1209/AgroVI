@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroVI Portal — Secure Login & Registration</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('agrovi-theme') || 'system';
+      let effectiveTheme = savedTheme;
+      if (savedTheme === 'system') {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', effectiveTheme);
+    })();
+  </script>
+</head>
+<body class="auth-page-body">
+
+  <!-- Top Utility Bar -->
+  <div class="top-bar">
+    <div class="top-bar-inner container">
+      <div class="contact-info">
+        <span class="contact-item">📞 Emergency Agri-Helpline: +91 1800-AGRO-AI</span>
+        <span class="contact-item">✉️ support@agrovi.ai</span>
+      </div>
+      <div class="top-actions">
+        <div class="lang-selector">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="hi">हिन्दी</button>
+          <button class="lang-btn" data-lang="ta">தமிழ்</button>
+        </div>
+        <button id="theme-toggle" class="btn btn-tertiary theme-btn" aria-label="Toggle light/dark mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner container">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">🌿</span>
+        <span class="logo-text">AgroVI</span>
+        <span class="logo-badge">SECURE AUTH</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">← Back to Home</a>
+        <a href="dashboard.html" class="nav-link">Demo Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Auth Portal Container -->
+  <main class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header-badge">
+        <span class="shield-icon">🛡️</span> SHA-256 Web Crypto Protection Active
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="auth-tab-bar">
+        <button class="auth-tab-btn active" data-tab="tab-login" data-i18n="loginBtn">Farmer Login</button>
+        <button class="auth-tab-btn" data-tab="tab-register">New User Registration</button>
+        <button class="auth-tab-btn" data-tab="tab-forgot">Forgot Password?</button>
+      </div>
+
+      <!-- TAB 1: LOGIN -->
+      <div id="tab-login" class="auth-tab-pane active">
+        <h2 class="auth-title">Welcome to AgroVI AI Portal</h2>
+        <p class="auth-subtitle">Enter your registered credentials to access your smart farm telemetry.</p>
+
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <label for="login-username">Username or Mobile / Email</label>
+            <input type="text" id="login-username" class="form-input" placeholder="e.g. Ramesh Patil or ramesh@farm.in" required>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••••••" required>
+          </div>
+
+          <div class="form-row flex-between">
+            <label class="checkbox-label">
+              <input type="checkbox" checked> Remember this device
+            </label>
+            <span class="security-indicator">🔒 Salted SHA-256 Hash</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-large">Authenticate & Launch Dashboard →</button>
+        </form>
+      </div>
+
+      <!-- TAB 2: REGISTER -->
+      <div id="tab-register" class="auth-tab-pane">
+        <h2 class="auth-title">Create New AgroVI Account</h2>
+        <p class="auth-subtitle">Join over 12,000+ smart farmers utilizing AI crop disease detection and soil telemetry.</p>
+
+        <form id="register-form" class="auth-form">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="reg-fullname">Full Name *</label>
+              <input type="text" id="reg-fullname" class="form-input" placeholder="e.g. Ramesh Patil" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="reg-phone">Mobile Phone Number *</label>
+              <input type="tel" id="reg-phone" class="form-input" placeholder="+91 98765 43210" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="reg-email">Email Address *</label>
+              <input type="email" id="reg-email" class="form-input" placeholder="farmer@agrovi.ai" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="reg-farmsize">Farm Size (Acres) *</label>
+              <input type="number" id="reg-farmsize" class="form-input" placeholder="e.g. 15 Acres" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-password">Account Password (Min 8 Characters) *</label>
+            <input type="password" id="reg-password" class="form-input" placeholder="••••••••••••" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-large">Register & Initialize Farm Space →</button>
+        </form>
+      </div>
+
+      <!-- TAB 3: FORGOT PASSWORD -->
+      <div id="tab-forgot" class="auth-tab-pane">
+        <h2 class="auth-title">Reset Your AgroVI Password</h2>
+        <p class="auth-subtitle">Enter your registered email address to receive a secure password reset link and OTP.</p>
+
+        <form id="forgot-form" class="auth-form">
+          <div class="form-group">
+            <label for="forgot-email">Registered Email Address</label>
+            <input type="email" id="forgot-email" class="form-input" placeholder="farmer@agrovi.ai" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-large">Send Reset Link & Verification Code</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-bottom container">
+      <p data-i18n="footerCopyright">© 2026 AgroVI Smart Farming & AI Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { Auth } from './js/auth.js';
+    import { initTheme } from './js/theme.js';
+    import { setLanguage } from './js/i18n.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      Auth.init();
+
+      document.querySelectorAll('.lang-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const lang = btn.getAttribute('data-lang');
+          setLanguage(lang);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

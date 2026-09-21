@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroVI App Dashboard — Smart Agriculture Control Room</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('agrovi-theme') || 'system';
+      let effectiveTheme = savedTheme;
+      if (savedTheme === 'system') {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', effectiveTheme);
+    })();
+  </script>
+</head>
+<body class="dashboard-page-body">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar-inner container-fluid">
+      <div class="contact-info">
+        <span class="contact-item">📡 IoT Field Node: Active (Nashik Sector 4)</span>
+        <span class="contact-item">💧 Drip Valve Grid: Online</span>
+      </div>
+      <div class="top-actions">
+        <div class="lang-selector">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="hi">हिन्दी</button>
+          <button class="lang-btn" data-lang="ta">தமிழ்</button>
+        </div>
+        <button id="theme-toggle" class="btn btn-tertiary theme-btn" aria-label="Toggle light/dark mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header dashboard-header">
+    <div class="header-inner container-fluid">
+      <div class="header-left flex-align">
+        <button id="menu-toggle" class="mobile-menu-toggle" aria-label="Toggle Navigation Menu">☰</button>
+        <a href="index.html" class="logo">
+          <span class="logo-mark">🌿</span>
+          <span class="logo-text">AgroVI</span>
+          <span class="logo-badge">APP V2.4</span>
+        </a>
+      </div>
+
+      <div class="user-status-bar flex-align">
+        <span class="user-pill" id="user-profile-name">👤 Ramesh Patil (Farmer)</span>
+        <a href="index.html" class="btn btn-tertiary btn-small">Exit / Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Layout -->
+  <div class="dash-app-layout">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar-drawer" id="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">FIELD NAVIGATION</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#overview" class="dash-nav-item active" data-view="overview" data-i18n="overview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          Overview
+        </a>
+        <a href="#nutrition" class="dash-nav-item" data-view="nutrition" data-i18n="nutrition">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          Plant Nutrition
+        </a>
+        <a href="#cropVision" class="dash-nav-item" data-view="cropVision" data-i18n="cropVision">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8M8 12h8"></path></svg>
+          Crop Vision AI
+        </a>
+        <a href="#irrigation" class="dash-nav-item" data-view="irrigation" data-i18n="irrigation">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+          Smart Irrigation
+        </a>
+        <a href="#weatherDesk" class="dash-nav-item" data-view="weatherDesk" data-i18n="weatherDesk">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"></path></svg>
+          Weather Desk
+        </a>
+        <a href="#marketHub" class="dash-nav-item" data-view="marketHub" data-i18n="marketHub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          Market Mandi Hub
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="system-status-indicator"><span class="status-dot"></span> System Live</span>
+      </div>
+    </aside>
+
+    <!-- Main Content Panels -->
+    <main class="dash-content-area">
+
+      <!-- VIEW 1: OVERVIEW -->
+      <section id="view-overview" class="dash-view-panel active">
+        <div class="view-header">
+          <h1 class="view-title">Field Summary & Command Center</h1>
+          <p class="view-desc" data-i18n="heroSub">Your field is calm. Check irrigation before sunset.</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card glass-panel">
+            <span class="stat-icon">🌱</span>
+            <div class="stat-info">
+              <span class="stat-label">Soil Health Index</span>
+              <span class="stat-val">94.2 / 100</span>
+              <span class="stat-sub text-success">Optimal Moisture & pH</span>
+            </div>
+          </div>
+          <div class="stat-card glass-panel">
+            <span class="stat-icon">💧</span>
+            <div class="stat-info">
+              <span class="stat-label">Root Zone Moisture</span>
+              <span class="stat-val">42%</span>
+              <span class="stat-sub">Zone 2 Drip Active</span>
+            </div>
+          </div>
+          <div class="stat-card glass-panel">
+            <span class="stat-icon">☀️</span>
+            <div class="stat-info">
+              <span class="stat-label">Solar Radiation</span>
+              <span class="stat-val">850 W/m²</span>
+              <span class="stat-sub">High Evapotranspiration</span>
+            </div>
+          </div>
+          <div class="stat-card glass-panel">
+            <span class="stat-icon">🛰️</span>
+            <div class="stat-info">
+              <span class="stat-label">NDVI Vegetation</span>
+              <span class="stat-val">0.82 Vigor</span>
+              <span class="stat-sub text-success">Healthy Canopy</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-actions-bar margin-top">
+          <h3>Quick Actions</h3>
+          <div class="action-buttons-flex">
+            <button class="btn btn-primary" id="btn-scan-leaf-quick" data-i18n="scanLeaf">Scan Leaf</button>
+            <button class="btn btn-secondary" id="btn-irrigate-quick" data-i18n="controlWater">Control water</button>
+            <button class="btn btn-tertiary" id="btn-weather-quick" data-i18n="checkWeather">Check weather</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: PLANT NUTRITION -->
+      <section id="view-nutrition" class="dash-view-panel">
+        <div class="view-header">
+          <h1 class="view-title">Plant Nutrition & N-P-K Soil Analytics</h1>
+          <p class="view-desc">Monitor Nitrogen, Phosphorus, Potassium levels and calculate tailored fertilizer dosages.</p>
+        </div>
+
+        <div class="grid-2-col">
+          <div class="glass-panel card-padding">
+            <h3>Soil N-P-K Balance Controllers</h3>
+            
+            <div class="slider-group margin-top">
+              <div class="slider-label-row">
+                <span>Nitrogen (N) - Leaf & Stem Vigor</span>
+                <strong id="npk-n-val">55 kg/ha</strong>
+              </div>
+              <input type="range" id="npk-n-slider" min="10" max="100" value="55" class="range-input">
+            </div>
+
+            <div class="slider-group margin-top">
+              <div class="slider-label-row">
+                <span>Phosphorus (P) - Root Development</span>
+                <strong id="npk-p-val">38 kg/ha</strong>
+              </div>
+              <input type="range" id="npk-p-slider" min="10" max="100" value="38" class="range-input">
+            </div>
+
+            <div class="slider-group margin-top">
+              <div class="slider-label-row">
+                <span>Potassium (K) - Disease Immunity</span>
+                <strong id="npk-k-val">45 kg/ha</strong>
+              </div>
+              <input type="range" id="npk-k-slider" min="10" max="100" value="45" class="range-input">
+            </div>
+
+            <div class="status-box margin-top" id="npk-recommendation" style="color: var(--color-primary); font-weight: 600;">
+              Optimal Nutrient Balance achieved for current crop cycle.
+            </div>
+          </div>
+
+          <div class="glass-panel card-padding">
+            <h3>Soil pH & Micronutrient Profile</h3>
+            <div class="ph-gauge-box text-center margin-top">
+              <span class="ph-number">6.5 pH</span>
+              <span class="ph-status-pill">Slightly Acidic (Ideal for Wheat & Maize)</span>
+            </div>
+
+            <div class="nutrient-table-wrapper margin-top">
+              <table class="table-custom">
+                <thead>
+                  <tr><th>Micronutrient</th><th>Measured Level</th><th>Target Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Zinc (Zn)</td><td>1.2 ppm</td><td class="text-success">Optimal</td></tr>
+                  <tr><td>Iron (Fe)</td><td>4.5 ppm</td><td class="text-success">Optimal</td></tr>
+                  <tr><td>Boron (B)</td><td>0.4 ppm</td><td class="text-warning">Low — Add Spray</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: CROP VISION AI -->
+      <section id="view-cropVision" class="dash-view-panel">
+        <div class="view-header">
+          <h1 class="view-title">Crop Vision AI — Real-Time Leaf Disease Diagnostic</h1>
+          <p class="view-desc">Upload or capture a leaf photo for instant computer vision disease detection and remedy advice.</p>
+        </div>
+
+        <div class="grid-2-col">
+          <div class="glass-panel card-padding text-center">
+            <h3>Upload Leaf Image or Use Live Camera</h3>
+            <div class="upload-drop-zone margin-top" id="drop-zone">
+              <span class="drop-icon">📷</span>
+              <p>Drag & drop leaf photo here, or click to browse</p>
+              <button class="btn btn-secondary margin-top" id="btn-trigger-scan">Run AI Diagnostic Scan</button>
+            </div>
+          </div>
+
+          <div class="glass-panel card-padding" id="vision-results-box">
+            <h3>AI Diagnostic Scan Report</h3>
+            <div class="scan-status-alert margin-top">
+              <strong>Diagnostic Status:</strong> <span id="scan-health-status">Healthy Leaf Detected (98.4% Confidence)</span>
+            </div>
+            <div class="scan-details-list margin-top">
+              <p><strong>Pathogen Scan:</strong> No fungal rust or blight spores detected.</p>
+              <p><strong>Recommended Treatment:</strong> Continue standard organic neem spray every 14 days.</p>
+              <p><strong>Dosage:</strong> 5ml Neem Oil per Liter of water.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: SMART IRRIGATION -->
+      <section id="view-irrigation" class="dash-view-panel">
+        <div class="view-header">
+          <h1 class="view-title">Smart Irrigation & Valve Actuation</h1>
+          <p class="view-desc">Automated drip irrigation zone scheduling and real-time solenoid valve switches.</p>
+        </div>
+
+        <div class="zones-grid">
+          <div class="glass-panel card-padding zone-card">
+            <div class="zone-header">
+              <h3>Zone 1: North Orchard</h3>
+              <span class="badge badge-success">Moisture 48%</span>
+            </div>
+            <p>Soil Type: Clay Loam | Drip Rate: 4 L/hr</p>
+            <button class="btn valve-toggle margin-top" data-zone="1" style="background-color: var(--grey-400);">VALVE OFF</button>
+          </div>
+
+          <div class="glass-panel card-padding zone-card">
+            <div class="zone-header">
+              <h3>Zone 2: South Wheat Field</h3>
+              <span class="badge badge-warning">Moisture 31%</span>
+            </div>
+            <p>Soil Type: Sandy Loam | Drip Rate: 6 L/hr</p>
+            <button class="btn valve-toggle active margin-top" data-zone="2" style="background-color: var(--green-500);">VALVE ON</button>
+          </div>
+
+          <div class="glass-panel card-padding zone-card">
+            <div class="zone-header">
+              <h3>Zone 3: Greenhouse Tomatoes</h3>
+              <span class="badge badge-success">Moisture 54%</span>
+            </div>
+            <p>Soil Type: Hydroponic Medium | Drip Rate: 2 L/hr</p>
+            <button class="btn valve-toggle margin-top" data-zone="3" style="background-color: var(--grey-400);">VALVE OFF</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: WEATHER DESK -->
+      <section id="view-weatherDesk" class="dash-view-panel">
+        <div class="view-header">
+          <h1 class="view-title">Micro-Climate Weather Desk</h1>
+          <p class="view-desc">Localized 7-day weather predictions, frost risk alerts, and humidity gauges.</p>
+        </div>
+
+        <div class="grid-2-col">
+          <div class="glass-panel card-padding">
+            <h3>Current Micro-Climate</h3>
+            <div class="weather-hero-row margin-top">
+              <span class="weather-large-icon">🌤️</span>
+              <div>
+                <h2 style="font-size: 2.2rem; margin: 0;">28°C</h2>
+                <p>Nashik Field Node #4 | Partly Cloudy</p>
+              </div>
+            </div>
+            <ul class="weather-metrics-list margin-top">
+              <li>💧 Relative Humidity: <strong>58%</strong></li>
+              <li>💨 Wind Speed: <strong>12 km/h (NW)</strong></li>
+              <li>🌧️ 24h Rain Chance: <strong>15%</strong></li>
+              <li>❄️ Frost Risk: <strong class="text-success">Zero Risk</strong></li>
+            </ul>
+          </div>
+
+          <div class="glass-panel card-padding">
+            <h3>7-Day Forecast</h3>
+            <div class="forecast-list margin-top">
+              <div class="forecast-row"><span>Mon</span> <span>☀️ 30°C / 18°C</span> <span>Clear</span></div>
+              <div class="forecast-row"><span>Tue</span> <span>🌤️ 29°C / 19°C</span> <span>Partly Cloudy</span></div>
+              <div class="forecast-row"><span>Wed</span> <span>🌧️ 26°C / 17°C</span> <span>Light Rain (8mm)</span></div>
+              <div class="forecast-row"><span>Thu</span> <span>☀️ 31°C / 20°C</span> <span>Sunny</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: MARKET HUB -->
+      <section id="view-marketHub" class="dash-view-panel">
+        <div class="view-header">
+          <h1 class="view-title">Mandi Commodity Market Hub</h1>
+          <p class="view-desc">Live APMC agricultural trading rates, buyer orders, and crop price forecasts.</p>
+        </div>
+
+        <div class="grid-2-col">
+          <div class="glass-panel card-padding">
+            <h3>Live APMC Market Lookup</h3>
+            <div class="form-group margin-top">
+              <label for="mandi-crop-select">Select Commodity Crop</label>
+              <select id="mandi-crop-select" class="form-input">
+                <option value="wheat">Wheat (Sonalika / Sharbati)</option>
+                <option value="paddy">Paddy Rice (Basmati)</option>
+                <option value="tomato">Tomato (Hybrid Red)</option>
+                <option value="cotton">Cotton (Long Staple)</option>
+              </select>
+            </div>
+
+            <div class="mandi-result-box margin-top card-padding glass-panel">
+              <span class="mandi-label">Current APMC Spot Rate:</span>
+              <h2 id="mandi-price-display" style="color: var(--color-primary); margin: 0.5rem 0;">₹2,275 / quintal</h2>
+              <span class="mandi-trend" id="mandi-trend-display" style="color: var(--color-success); font-weight: 600;">+2.4% (Nashik APMC Hub)</span>
+            </div>
+          </div>
+
+          <div class="glass-panel card-padding">
+            <h3>Connect with Direct AgroVI Buyers</h3>
+            <form id="buyer-form" class="margin-top">
+              <div class="form-group">
+                <label>Offer Quantity (Quintals)</label>
+                <input type="number" class="form-input" placeholder="e.g. 50 Quintals" required>
+              </div>
+              <div class="form-group">
+                <label>Harvest Availability Date</label>
+                <input type="date" class="form-input" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Post Supply Offer to Buyers →</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Floating Debug Badge & Security Monitor Panel -->
+  <div class="debug-toggle-badge" id="debug-toggle-badge" title="Click to open Security & Debug Monitor">
+    🐞 Debug & Security
+  </div>
+
+  <div class="debug-monitor-panel" id="debug-monitor-panel">
+    <div class="debug-panel-header">
+      <h4>🐞 AgroVI Security & Session Monitor</h4>
+      <button class="debug-close-btn" id="debug-close-btn">✕</button>
+    </div>
+    <div class="debug-panel-body">
+      <div class="debug-info-row">
+        <span>Crypto Hashing:</span>
+        <strong id="debug-hash-token">SHA256_e89a32c7bf14</strong>
+      </div>
+      <div class="debug-info-row">
+        <span>Session State:</span>
+        <strong style="color: var(--color-success);">Authenticated</strong>
+      </div>
+      <div class="debug-info-row">
+        <span>Active Theme:</span>
+        <strong>Light / Glass Overlay</strong>
+      </div>
+      <div class="debug-info-row">
+        <span>Web Crypto API:</span>
+        <strong>AES-GCM-256 Ready</strong>
+      </div>
+
+      <div class="debug-controls margin-top">
+        <label>Switch Demo Role:</label>
+        <div class="flex-gap margin-top-sm">
+          <button class="btn btn-tertiary btn-small debug-role-btn" data-role="Farmer">Farmer</button>
+          <button class="btn btn-tertiary btn-small debug-role-btn" data-role="Agronomist">Agronomist</button>
+          <button class="btn btn-tertiary btn-small debug-role-btn" data-role="Auditor">Auditor</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Dashboard } from './js/dashboard.js';
+    import { initTheme } from './js/theme.js';
+    import { setLanguage } from './js/i18n.js';
+    import { initSidebar } from './js/sidebar.js';
+    import { initVision } from './js/vision.js';
+    import { initIrrigation } from './js/irrigation.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      initSidebar();
+      initVision();
+      initIrrigation();
+      Dashboard.init();
+
+      document.querySelectorAll('.lang-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const lang = btn.getAttribute('data-lang');
+          setLanguage(lang);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
