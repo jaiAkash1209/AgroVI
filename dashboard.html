@@ -56,6 +56,7 @@
       </div>
 
       <div class="user-status-bar flex-align">
+        <button class="btn btn-tertiary voice-mic-btn" id="btn-voice-mic" title="Click to speak voice commands (EN / HI / TA)">🎙️ Voice Agent</button>
         <span class="user-pill" id="user-profile-name">👤 Ramesh Patil (Farmer)</span>
         <a href="index.html" class="btn btn-tertiary btn-small">Exit / Logout</a>
       </div>
@@ -223,28 +224,47 @@
       <section id="view-cropVision" class="dash-view-panel">
         <div class="view-header">
           <h1 class="view-title">Crop Vision AI — Real-Time Leaf Disease Diagnostic</h1>
-          <p class="view-desc">Upload or capture a leaf photo for instant computer vision disease detection and remedy advice.</p>
+          <p class="view-desc">Upload or capture a leaf photo for instant computer vision disease detection, canvas heatmap segmentation, and remedy advice.</p>
         </div>
 
         <div class="grid-2-col">
           <div class="glass-panel card-padding text-center">
             <h3>Upload Leaf Image or Use Live Camera</h3>
+            
             <div class="upload-drop-zone margin-top" id="drop-zone">
               <span class="drop-icon">📷</span>
               <p>Drag & drop leaf photo here, or click to browse</p>
-              <button class="btn btn-secondary margin-top" id="btn-trigger-scan">Run AI Diagnostic Scan</button>
+              <input type="file" id="leaf-file-input" accept="image/*" style="display:none">
+              <button class="btn btn-primary margin-top" id="btn-trigger-scan">Run AI Diagnostic Scan</button>
+            </div>
+
+            <div class="canvas-preview-wrapper margin-top">
+              <label style="display:block; font-weight:700; font-size:11px; margin-bottom:6px;">AI Defect Heatmap Segmentation:</label>
+              <canvas id="vision-heatmap-canvas" width="280" height="180" class="vision-canvas"></canvas>
             </div>
           </div>
 
           <div class="glass-panel card-padding" id="vision-results-box">
-            <h3>AI Diagnostic Scan Report</h3>
+            <h3>AI Diagnostic Scan & Remedy Report</h3>
+            
             <div class="scan-status-alert margin-top">
-              <strong>Diagnostic Status:</strong> <span id="scan-health-status">Healthy Leaf Detected (98.4% Confidence)</span>
+              <strong>Pathology Diagnosis:</strong> <span id="scan-health-status" style="color:var(--color-primary); font-weight:700;">Early Blight (Alternaria solani) (96.8% Confidence)</span>
             </div>
+
+            <div class="severity-progress-wrapper margin-top">
+              <div class="flex-between">
+                <span>Infection Surface Area:</span>
+                <strong id="scan-severity-val">34% Defect Area</strong>
+              </div>
+              <div class="progress-track margin-top-sm">
+                <div class="progress-fill" id="scan-severity-bar" style="width: 34%; background: var(--amber-500); height: 8px; border-radius: 4px;"></div>
+              </div>
+            </div>
+
             <div class="scan-details-list margin-top">
-              <p><strong>Pathogen Scan:</strong> No fungal rust or blight spores detected.</p>
-              <p><strong>Recommended Treatment:</strong> Continue standard organic neem spray every 14 days.</p>
-              <p><strong>Dosage:</strong> 5ml Neem Oil per Liter of water.</p>
+              <p>🌿 <strong>Organic Treatment:</strong> <span id="scan-organic-remedy">Neem Oil Solution (5ml/L) + Trichoderma viride bio-fungicide (5g/L).</span></p>
+              <p>🧪 <strong>Chemical Treatment:</strong> <span id="scan-chemical-remedy">Mancozeb 75% WP (2.5g/L water) or Copper Oxychloride 50% WP (3g/L).</span></p>
+              <p>🚜 <strong>Recommended Spray Volume:</strong> <span id="scan-dosage-acre">250 Liters of spray mixture per acre (625g Mancozeb total).</span></p>
             </div>
           </div>
         </div>
