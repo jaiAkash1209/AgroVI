@@ -437,6 +437,7 @@
     import { initSidebar } from './js/sidebar.js';
     import { initVision } from './js/vision.js';
     import { initIrrigation } from './js/irrigation.js';
+    import { VoiceAssistant } from './js/voice.js';
 
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
@@ -444,11 +445,13 @@
       initVision();
       initIrrigation();
       Dashboard.init();
+      VoiceAssistant.init();
 
       document.querySelectorAll('.lang-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
           const lang = btn.getAttribute('data-lang');
           setLanguage(lang);
+          VoiceAssistant.setLanguage(lang);
         });
       });
     });
