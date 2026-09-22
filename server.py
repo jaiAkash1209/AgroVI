@@ -45,7 +45,7 @@ if not os.path.exists(DB_FILE):
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(initial_db, f, indent=2)
 
-GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbySXYTmTlUzSJzwcGT6efNSQJn41m_Jn-LJUV9t5wFw1aLXRX_qf5asdv-M8tPw4niwrw/exec"
+GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzq6MsRJTZyjanmGU0cZfkBS60C2q37bjKV0KRWh9gxSd85Cv_dFR-0FI8ph-b7qVZzSA/exec"
 
 SALT = ":agrovi_salt_2026"
 
