@@ -1,0 +1,16 @@
+name: 24/7 Keep Alive Pinger for Render
+
+on:
+  schedule:
+    # Run every 10 minutes (UTC)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping AgroVI Live Server
+        run: |
+          curl -sS -I --max-time 30 https://agrovi-rsvc.onrender.com/ || true
+          echo "AgroVI Live Server pinged successfully at $(date)"

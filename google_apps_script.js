@@ -440,3 +440,35 @@ function responseJSON(obj) {
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
+/**
+ * 24/7 Keep-Alive Pinger for Render
+ * Pings your live Render deployment every 10 minutes to prevent sleep / cold-starts.
+ */
+function pingRenderServer() {
+  const url = "https://agrovi-rsvc.onrender.com/";
+  try {
+    const resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    Logger.log("Pinged Render server successfully! Status: " + resp.getResponseCode());
+  } catch (err) {
+    Logger.log("Ping error: " + err.toString());
+  }
+}
+
+/**
+ * Run this function once in Apps Script to automatically schedule pingRenderServer every 10 minutes!
+ */
+function setupKeepAliveTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  for (let i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === "pingRenderServer") {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  ScriptApp.newTrigger("pingRenderServer")
+    .timeBased()
+    .everyMinutes(10)
+    .create();
+  Logger.log("Keep-alive trigger scheduled! Render will be pinged every 10 minutes.");
+}
+
