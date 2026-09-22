@@ -36,7 +36,13 @@ function getOrCreateSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
+    const sheets = ss.getSheets();
+    if (sheets.length === 1 && (sheets[0].getName() === "Sheet1" || sheets[0].getLastRow() <= 1)) {
+      sheet = sheets[0];
+      sheet.setName(SHEET_NAME);
+    } else {
+      sheet = ss.insertSheet(SHEET_NAME);
+    }
     sheet.appendRow(HEADERS);
     // Style headers
     const headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
@@ -45,7 +51,40 @@ function getOrCreateSheet() {
     headerRange.setFontWeight("bold");
     sheet.setFrozenRows(1);
   }
+
+  // Delete leftover empty "Sheet1" if multiple sheets exist
+  try {
+    const sheet1 = ss.getSheetByName("Sheet1");
+    if (sheet1 && ss.getSheets().length > 1 && sheet1.getLastRow() <= 1) {
+      ss.deleteSheet(sheet1);
+    }
+  } catch (e) {}
+
+  // Focus the Users sheet
+  try {
+    ss.setActiveSheet(sheet);
+  } catch (e) {}
+
   return sheet;
+}
+
+/**
+ * ONE-CLICK FIX IF VIEWING AN EMPTY TAB:
+ * In Apps Script editor, select "cleanupAndFocusUsersTab" and click Run (▶).
+ * It will delete the blank "Sheet1" and activate the "Users" tab with all 6 farmer records.
+ */
+function cleanupAndFocusUsersTab() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let usersSheet = ss.getSheetByName(SHEET_NAME);
+  if (!usersSheet) {
+    usersSheet = getOrCreateSheet();
+  }
+  const sheet1 = ss.getSheetByName("Sheet1");
+  if (sheet1 && ss.getSheets().length > 1) {
+    ss.deleteSheet(sheet1);
+  }
+  ss.setActiveSheet(usersSheet);
+  Logger.log("Users tab focused! Records count: " + (usersSheet.getLastRow() - 1));
 }
 
 const SALT = ":agrovi_salt_2026";
@@ -87,6 +126,33 @@ function hashAllExistingPasswords() {
 
   Logger.log("Finished! Total records converted to SHA-256: " + count);
   return "Successfully hashed " + count + " previous records!";
+}
+
+/**
+ * ONE-CLICK TEST TO VERIFY EMAIL DELIVERY & GRANT MAIL PERMISSION
+ * In Google Apps Script:
+ * 1. Select "testSendOtp" from the function dropdown at top.
+ * 2. Click "Run" (▶).
+ * 3. Click "Review permissions" -> select your Google Account -> "Advanced" -> "Go to AgroVI Database API" -> "Allow".
+ * 4. Check your Gmail inbox - you will receive the test verification code!
+ */
+function testSendOtp() {
+  const myEmail = Session.getActiveUser().getEmail() || "tm343404@gmail.com";
+  Logger.log("Dispatching test OTP email to: " + myEmail);
+  const testEvent = {
+    postData: {
+      contents: JSON.stringify({
+        action: "send_otp",
+        email: myEmail,
+        otp: "847291",
+        purpose: "signup",
+        fullname: "T Jai Akash"
+      })
+    }
+  };
+  const result = doPost(testEvent);
+  Logger.log("Result: " + result.getContent());
+  return result.getContent();
 }
 
 function doPost(e) {
@@ -243,8 +309,8 @@ function doPost(e) {
       }
 
       const subject = purpose === "reset" 
-        ? "AgroVI Security \u2014 " + otpCode + " is your Password Reset Code"
-        : "AgroVI Verification \u2014 " + otpCode + " is your Account Registration Code";
+        ? "AgroVI Security - " + otpCode + " is your Password Reset Code"
+        : "AgroVI Verification - " + otpCode + " is your Account Registration Code";
 
       const title = purpose === "reset" ? "Password Reset Request" : "Account Email Verification";
       const messageText = purpose === "reset"
@@ -253,8 +319,13 @@ function doPost(e) {
 
       const htmlBody = ""
         + "<div style=\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 540px; margin: 0 auto; background: #0c140f; border: 1px solid #1e3326; border-radius: 12px; overflow: hidden; color: #e8f5ec;\">"
-        + "  <div style=\"background: #111d16; padding: 24px 32px; border-bottom: 1px solid #1e3326;\">"
-        + "    <h2 style=\"margin: 0; color: #00ff88; font-size: 20px; font-weight: 800;\">\uD83C\uDF3E AgroVI Enterprise</h2>"
+        + "  <div style=\"background: #111d16; padding: 22px 30px; border-bottom: 1px solid #1e3326;\">"
+        + "    <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin: 0; padding: 0;\">"
+        + "      <tr>"
+        + "        <td style=\"background: #143520; border: 1.5px solid #00ff88; border-radius: 6px; padding: 4px 10px; font-family: monospace; font-size: 13px; font-weight: 800; color: #00ff88; letter-spacing: 1.5px;\">AGROVI</td>"
+        + "        <td style=\"padding-left: 12px; font-size: 19px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;\">Enterprise Security</td>"
+        + "      </tr>"
+        + "    </table>"
         + "  </div>"
         + "  <div style=\"padding: 32px;\">"
         + "    <h3 style=\"margin-top: 0; color: #ffffff; font-size: 18px;\">" + title + "</h3>"
@@ -266,19 +337,40 @@ function doPost(e) {
         + "    <p style=\"color: #546e5e; font-size: 12px; line-height: 1.5;\">This security verification code will expire in <strong>10 minutes</strong>. If you did not initiate this request, you can safely ignore this email.</p>"
         + "  </div>"
         + "  <div style=\"background: #090e0b; padding: 16px 32px; border-top: 1px solid #16261d; font-size: 11px; color: #546e5e; text-align: center;\">"
-        + "    \u00A9 2026 AgroVI Smart Agriculture Systems \u2022 Sent securely via Google Cloud Infrastructure"
+        + "    &copy; 2026 AgroVI Smart Agriculture Systems &bull; Sent securely via Google Cloud Infrastructure"
         + "  </div>"
         + "</div>";
 
       try {
-        MailApp.sendEmail({
-          to: toEmail,
-          subject: subject,
-          htmlBody: htmlBody
-        });
+        if (typeof GmailApp !== "undefined") {
+          GmailApp.sendEmail(toEmail, subject, "", {
+            htmlBody: htmlBody,
+            name: "AgroVI Security"
+          });
+        } else {
+          MailApp.sendEmail({
+            to: toEmail,
+            subject: subject,
+            htmlBody: htmlBody,
+            name: "AgroVI Security"
+          });
+        }
+        Logger.log("OTP email sent successfully to " + toEmail);
         return responseJSON({ success: true, message: "OTP email delivered successfully to " + toEmail });
       } catch (mailErr) {
-        return responseJSON({ success: false, error: mailErr.toString() });
+        Logger.log("GmailApp failed, trying MailApp fallback: " + mailErr);
+        try {
+          MailApp.sendEmail({
+            to: toEmail,
+            subject: subject,
+            htmlBody: htmlBody,
+            name: "AgroVI Security"
+          });
+          return responseJSON({ success: true, message: "OTP email delivered successfully via MailApp to " + toEmail });
+        } catch (mErr) {
+          Logger.log("Both mail senders failed: " + mErr);
+          return responseJSON({ success: false, error: mErr.toString() });
+        }
       }
     }
 

@@ -1,3 +1,6 @@
 # Local visual-regression captures created during browser checks.
 dashboard-preview.png
 mobile-preview.png
+__pycache__/
+*.pyc
+.DS_Store

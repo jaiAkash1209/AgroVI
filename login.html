@@ -69,103 +69,242 @@
 
   <!-- Auth Portal Container -->
   <main class="auth-wrapper">
-    <div class="auth-card">
-      <!-- Tab Switcher -->
-      <div class="auth-tab-bar">
-        <button class="auth-tab-btn active" data-tab="tab-login" data-i18n="loginBtn">Login</button>
-        <button class="auth-tab-btn" data-tab="tab-register" data-i18n="signUpBtn">Sign Up</button>
-        <button class="auth-tab-btn" data-tab="tab-forgot" data-i18n="forgotPassTab">Forgot Password?</button>
-      </div>
+    <div class="auth-clean-card">
 
-      <!-- TAB 1: LOGIN -->
+      <!-- VIEW 1: SIGN-IN (Matches Reference Image Exactly) -->
       <div id="tab-login" class="auth-tab-pane active">
-        <h2 class="auth-title" data-i18n="welcomeTitle">Welcome to AgroVI Portal</h2>
-        <p class="auth-subtitle" data-i18n="welcomeDesc">Enter your registered credentials to access your smart farm telemetry.</p>
+        <h1 class="auth-clean-title">Sign-In</h1>
 
-        <form id="login-form" class="auth-form">
-          <div class="form-group">
-            <label for="login-username" data-i18n="usernameLabel">Username or Mobile / Email</label>
-            <input type="text" id="login-username" class="form-input" placeholder="e.g. Ramesh Patil or ramesh@farm.in" required>
+        <form id="login-form">
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="login-username" class="auth-clean-label">E-mail Address</label>
+            <input type="text" id="login-username" class="auth-clean-input" placeholder="" required autocomplete="username">
           </div>
 
-          <div class="form-group">
-            <label for="login-password" data-i18n="passwordLabel">Password</label>
-            <input type="password" id="login-password" class="form-input" placeholder="••••••••••••" required>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label for="login-password" class="auth-clean-label">Password</label>
+            <div class="password-input-group">
+              <input type="password" id="login-password" class="auth-clean-input" placeholder="" required autocomplete="current-password">
+              <button type="button" class="btn-password-toggle" data-target="login-password" aria-label="Toggle password visibility">
+                <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
 
-          <div class="form-row flex-between">
-            <label class="checkbox-label">
-              <input type="checkbox" checked> <span data-i18n="rememberMe">Remember this device</span>
-            </label>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-full btn-large" data-i18n="loginSubmit">Login</button>
+          <button type="submit" class="btn-clean-outline" id="btn-login-submit">Sign in</button>
         </form>
+
+        <div class="clean-divider">
+          <span>OR</span>
+        </div>
+
+        <button type="button" class="btn-clean-solid" id="btn-switch-to-register">Create Account</button>
+
+        <button type="button" class="clean-blue-link" id="link-forgot-pass">Forgot / Reset Password?</button>
       </div>
 
-      <!-- TAB 2: REGISTER -->
+      <!-- VIEW 2: CREATE ACCOUNT -->
       <div id="tab-register" class="auth-tab-pane">
-        <h2 class="auth-title" data-i18n="createAccountTitle">Create New AgroVI Account</h2>
-        <p class="auth-subtitle">Join over 12,000+ smart farmers utilizing AI crop disease detection and soil telemetry.</p>
+        <h1 class="auth-clean-title">Create Account</h1>
 
-        <form id="register-form" class="auth-form">
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label for="reg-fullname" data-i18n="fullNameLabel">Full Name *</label>
-              <input type="text" id="reg-fullname" class="form-input" placeholder="e.g. Ramesh Patil" required>
+        <form id="register-form">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="reg-fullname" class="auth-clean-label">Full Name</label>
+            <input type="text" id="reg-fullname" class="auth-clean-input" placeholder="" required autocomplete="name">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="reg-email" class="auth-clean-label">E-mail Address</label>
+            <input type="email" id="reg-email" class="auth-clean-input" placeholder="" required autocomplete="email">
+          </div>
+
+          <div class="form-row" style="display: flex; gap: 12px; margin-bottom: 16px;">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+              <label for="reg-phone" class="auth-clean-label">Mobile Phone Number</label>
+              <input type="tel" id="reg-phone" class="auth-clean-input" placeholder="+91 98765 43210" required autocomplete="tel">
             </div>
-            <div class="form-group flex-1">
-              <label for="reg-phone" data-i18n="phoneLabel">Mobile Phone Number *</label>
-              <input type="tel" id="reg-phone" class="form-input" placeholder="+91 98765 43210" required>
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+              <label for="reg-farmsize" class="auth-clean-label">Farm Size (Acres)</label>
+              <input type="number" id="reg-farmsize" class="auth-clean-input" placeholder="20" required>
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label for="reg-email" data-i18n="emailLabel">Email Address *</label>
-              <input type="email" id="reg-email" class="form-input" placeholder="farmer@agrovi.ai" required>
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label for="reg-password" class="auth-clean-label">Password (Min 8 Characters)</label>
+            <div class="password-input-group">
+              <input type="password" id="reg-password" class="auth-clean-input" placeholder="" required autocomplete="new-password">
+              <button type="button" class="btn-password-toggle" data-target="reg-password" aria-label="Toggle password visibility">
+                <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
             </div>
-            <div class="form-group flex-1">
-              <label for="reg-farmsize" data-i18n="farmSizeLabel">Farm Size (Acres) *</label>
-              <input type="number" id="reg-farmsize" class="form-input" placeholder="e.g. 15 Acres" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="reg-password" data-i18n="accountPassLabel">Account Password (Min 8 Characters) *</label>
-            <input type="password" id="reg-password" class="form-input" placeholder="••••••••••••" required>
-            
-            <div class="pass-meter-wrapper margin-top-sm">
-              <div class="flex-between font-mono" style="font-size: 10px;">
+            <div class="pass-meter-wrapper" style="margin-top: 8px;">
+              <div class="flex-between font-mono" style="font-size: 10px; margin-bottom: 4px;">
                 <span>Password Strength:</span>
                 <strong id="pass-strength-text" style="color: var(--color-primary);">Too Short</strong>
               </div>
-              <div class="progress-track margin-top-sm" style="height: 4px; background: var(--grey-300); border-radius: 2px;">
-                <div id="pass-strength-bar" style="width: 10%; height: 100%; background: var(--red-500); border-radius: 2px; transition: all 0.2s;"></div>
+              <div class="progress-track" style="height: 4px; background: #e5e7eb; border-radius: 2px;">
+                <div id="pass-strength-bar" style="width: 10%; height: 100%; background: #dc2626; border-radius: 2px; transition: all 0.2s;"></div>
               </div>
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full btn-large" data-i18n="registerSubmit">Sign Up</button>
+          <button type="submit" class="btn-clean-solid" id="btn-register-submit">Create Account</button>
         </form>
+
+        <div class="clean-divider">
+          <span>OR</span>
+        </div>
+
+        <button type="button" class="btn-clean-outline" id="btn-switch-to-login">Sign in</button>
       </div>
 
-      <!-- TAB 3: FORGOT PASSWORD -->
+      <!-- VIEW 3: FORGOT / RESET PASSWORD -->
       <div id="tab-forgot" class="auth-tab-pane">
-        <h2 class="auth-title">Reset Your Password</h2>
-        <p class="auth-subtitle">Enter your registered email address to receive a password reset link.</p>
+        
+        <!-- STEP 1: Enter Email -->
+        <div id="forgot-step-1">
+          <h1 class="auth-clean-title">Reset Password</h1>
+          <p style="text-align: center; font-size: 14px; color: var(--color-text-muted); margin-bottom: 24px; line-height: 1.5;">
+            Enter your registered email address to receive a secure 6-digit verification code.
+          </p>
 
-        <form id="forgot-form" class="auth-form">
-          <div class="form-group">
-            <label for="forgot-email">Registered Email Address</label>
-            <input type="email" id="forgot-email" class="form-input" placeholder="farmer@agrovi.ai" required>
+          <form id="forgot-form-email">
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label for="forgot-email" class="auth-clean-label">E-mail Address</label>
+              <input type="email" id="forgot-email" class="auth-clean-input" placeholder="" required autocomplete="email">
+            </div>
+
+            <button type="submit" class="btn-clean-outline" id="btn-forgot-send-code">
+              Send 6-Digit Code
+            </button>
+          </form>
+
+          <div class="clean-divider">
+            <span>OR</span>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full btn-large" data-i18n="sendResetSubmit">Send Reset Link</button>
-        </form>
+          <button type="button" class="btn-clean-solid" id="btn-forgot-to-login">Back to Sign In</button>
+        </div>
+
+        <!-- STEP 2: Enter 6-Digit OTP -->
+        <div id="forgot-step-2" style="display: none;">
+          <h1 class="auth-clean-title">Verify Code</h1>
+          <p style="text-align: center; font-size: 14px; color: var(--color-text-muted); margin-bottom: 20px;">
+            Enter the 6-digit code sent to <span id="forgot-target-email" class="otp-email-target"></span>
+          </p>
+
+          <div class="otp-inputs-row" id="forgot-otp-container">
+            <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input forgot-otp-input" data-index="0" autofocus>
+            <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input forgot-otp-input" data-index="1">
+            <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input forgot-otp-input" data-index="2">
+            <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input forgot-otp-input" data-index="3">
+            <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input forgot-otp-input" data-index="4">
+            <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input forgot-otp-input" data-index="5">
+          </div>
+
+          <div id="forgot-otp-preview-hint" style="display: none; margin-bottom: 16px; padding: 10px 14px; background: rgba(30, 70, 32, 0.08); border: 1px dashed var(--color-primary); border-radius: 8px; font-size: 0.82rem; text-align: center;">
+            <span>Security Code: <strong id="forgot-preview-code" style="letter-spacing: 3px; font-family: monospace; font-size: 1.05rem; color: var(--color-primary);"></strong></span>
+            <button type="button" id="btn-forgot-autofill" style="margin-left: 12px; background: #111827; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.74rem; font-weight: 700; cursor: pointer;">Auto Fill</button>
+          </div>
+
+          <div class="otp-resend-row" style="margin-bottom: 20px;">
+            <span>Didn't get code?</span>
+            <button type="button" class="otp-resend-btn" id="btn-forgot-resend">Resend Code (45s)</button>
+          </div>
+
+          <button type="button" class="btn-clean-outline" id="btn-forgot-verify-code">
+            Verify Code
+          </button>
+          <button type="button" class="clean-blue-link" id="btn-forgot-back-email">
+            &larr; Change Email Address
+          </button>
+        </div>
+
+        <!-- STEP 3: Set New Password -->
+        <div id="forgot-step-3" style="display: none;">
+          <h1 class="auth-clean-title">New Password</h1>
+          <p style="text-align: center; font-size: 14px; color: var(--color-text-muted); margin-bottom: 20px;">
+            Your identity has been verified. Enter a secure new password for your account.
+          </p>
+
+          <form id="forgot-form-newpass">
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label for="forgot-new-password" class="auth-clean-label">New Password (Min 8 Characters)</label>
+              <div class="password-input-group">
+                <input type="password" id="forgot-new-password" class="auth-clean-input" placeholder="" required autocomplete="new-password">
+                <button type="button" class="btn-password-toggle" data-target="forgot-new-password" aria-label="Toggle password visibility">
+                  <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label for="forgot-confirm-password" class="auth-clean-label">Confirm New Password</label>
+              <div class="password-input-group">
+                <input type="password" id="forgot-confirm-password" class="auth-clean-input" placeholder="" required autocomplete="new-password">
+                <button type="button" class="btn-password-toggle" data-target="forgot-confirm-password" aria-label="Toggle password visibility">
+                  <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-clean-solid" id="btn-forgot-save-pass">
+              Update Password &amp; Sign In
+            </button>
+          </form>
+        </div>
+
       </div>
     </div>
   </main>
+
+  <!-- GMAIL-STYLE SIGN UP OTP VERIFICATION MODAL -->
+  <div id="signup-otp-modal" class="otp-overlay" role="dialog" aria-modal="true">
+    <div class="otp-card">
+      <button type="button" class="otp-close-btn" id="btn-signup-otp-close" title="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="otp-icon-wrap">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+
+      <h2 class="otp-title">Verify Your Email</h2>
+      <p class="otp-subtitle">
+        We sent a 6-digit security code to<br>
+        <span id="signup-target-email" class="otp-email-target">farmer@agrovi.ai</span>
+      </p>
+
+      <div class="otp-inputs-row" id="signup-otp-container">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input signup-otp-input" data-index="0" autofocus>
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input signup-otp-input" data-index="1">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input signup-otp-input" data-index="2">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input signup-otp-input" data-index="3">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input signup-otp-input" data-index="4">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input signup-otp-input" data-index="5">
+      </div>
+
+      <div id="signup-otp-preview-hint" style="display: none; margin-bottom: 16px; padding: 10px 14px; background: rgba(30, 70, 32, 0.08); border: 1px dashed var(--color-primary); border-radius: 8px; font-size: 0.82rem; text-align: center;">
+        <span>Security Code: <strong id="signup-preview-code" style="letter-spacing: 3px; font-family: monospace; font-size: 1.05rem; color: var(--color-primary);"></strong></span>
+        <button type="button" id="btn-signup-autofill" style="margin-left: 12px; background: var(--color-primary); color: #fff; border: none; padding: 3px 10px; border-radius: 4px; font-size: 0.74rem; font-weight: 700; cursor: pointer;">Auto Fill</button>
+      </div>
+
+      <div class="otp-resend-row">
+        <span>Didn't receive code?</span>
+        <button type="button" class="otp-resend-btn" id="btn-signup-resend">Resend Code (45s)</button>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-full btn-large" id="btn-signup-verify-submit">
+        Verify &amp; Create Account
+      </button>
+
+      <div style="margin-top: 16px;">
+        <button type="button" id="btn-signup-edit-details" style="background: none; border: none; color: var(--color-primary); font-size: 0.82rem; cursor: pointer; text-decoration: underline;">
+          Wrong email? Edit details
+        </button>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer">
     <div class="footer-bottom container">

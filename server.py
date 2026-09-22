@@ -8,11 +8,17 @@ registration, database persistence, and optional Google Sheets webhook forwardin
 import sys
 import os
 import json
+import time
+import datetime
+import random
+import socket
+import threading
+import hashlib
 import urllib.request
 import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+PORT = int(os.environ.get("PORT", sys.argv[1] if len(sys.argv) > 1 else 8000))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DB_FILE = os.path.join(DATA_DIR, "database.json")
@@ -40,9 +46,6 @@ if not os.path.exists(DB_FILE):
         json.dump(initial_db, f, indent=2)
 
 GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbySXYTmTlUzSJzwcGT6efNSQJn41m_Jn-LJUV9t5wFw1aLXRX_qf5asdv-M8tPw4niwrw/exec"
-
-import threading
-import hashlib
 
 SALT = ":agrovi_salt_2026"
 
@@ -119,9 +122,6 @@ def save_db(data):
 # ----------------------------------------------------
 # GMAIL-STYLE OTP VERIFICATION ENGINE
 # ----------------------------------------------------
-import random
-import time
-
 OTP_STORE = {}
 
 def cleanup_expired_otps():
@@ -160,7 +160,18 @@ def dispatch_otp_email(to_email, otp, purpose="signup", fullname="Farmer"):
                 headers={"Content-Type": "application/json", "User-Agent": "AgroVI-Server/1.0"}
             )
             with urllib.request.urlopen(req, timeout=12) as resp:
-                print(f"[OTP DISPATCH] Email delivered to {to_email} via Google Apps Script (Status: {resp.status})")
+                resp_body = resp.read().decode("utf-8")
+                try:
+                    data = json.loads(resp_body)
+                    if data.get("success"):
+                        print(f"[OTP DISPATCH SUCCESS] Verification email sent to {to_email} via Google Apps Script!")
+                    else:
+                        msg = data.get("message") or data.get("error")
+                        print(f"[OTP DISPATCH WARNING] Google Apps Script returned: {msg}")
+                        if "Unknown action" in str(msg):
+                            print(f" [ACTION REQUIRED] Google Apps Script in cloud needs update: paste google_apps_script.js and Deploy a New version.")
+                except Exception:
+                    print(f"[OTP DISPATCH RAW RESP] {resp_body}")
         except Exception as e:
             print(f"[OTP DISPATCH NOTICE] Google Apps Script email dispatch: {e}")
 
@@ -406,9 +417,8 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                     self._send_json({"success": False, "message": f"Email '{email}' is already registered. Please Login."}, 409)
                     return
 
-            import datetime
             new_id = f"USR-{len(users) + 1001}"
-            now_iso = datetime.datetime.utcnow().isoformat() + "Z"
+            now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
             new_user = {
                 "id": new_id,
@@ -469,7 +479,6 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
         # DEVELOPER API: PING SHEET (/api/admin/ping-sheet)
         # ----------------------------------------------------
         if parsed.path == "/api/admin/ping-sheet":
-            import time
             t0 = time.perf_counter()
             try:
                 req = urllib.request.Request(GOOGLE_SHEET_URL, headers={"User-Agent": "AgroVI-Admin/1.0"})
@@ -575,7 +584,8 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
             # Code matches!
             actual_purpose = record.get("purpose")
             if actual_purpose == "signup":
-                user_data = record.get("userData") or payload
+                user_data = dict(record.get("userData") or {})
+                user_data.update(payload)
                 fullname = str(user_data.get("fullname", "")).strip()
                 username = str(user_data.get("username", "")).strip().lower()
                 if not username and fullname:
@@ -590,7 +600,6 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                 db = load_db()
                 users = db.get("users", [])
                 new_id = f"USR-{len(users) + 1001}"
-                import datetime
                 now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
                 new_user = {
@@ -687,8 +696,6 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
 
         self._send_json({"success": False, "message": f"Endpoint not found: {parsed.path}"}, 404)
 
-import socket
-
 class DualStackServer(HTTPServer):
     address_family = socket.AF_INET6
 
@@ -700,7 +707,7 @@ def run():
     try:
         httpd = DualStackServer(("::", PORT), AgroVIHandler)
     except Exception:
-        httpd = HTTPServer(("", PORT), AgroVIHandler)
+        httpd = HTTPServer(("0.0.0.0", PORT), AgroVIHandler)
 
     print(f"==================================================")
     print(f" AgroVI Enterprise Server & Database API")

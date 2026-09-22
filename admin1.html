@@ -724,6 +724,23 @@
           </a>
         </div>
 
+        <!-- Tool 4: Live Active OTP Sessions -->
+        <div class="tool-box" style="grid-column: span 3;">
+          <div class="tool-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Live In-Memory OTP Verification Monitor
+            </div>
+            <span id="active-otp-count-badge" class="stealth-badge" style="font-size: 0.68rem;">0 Active Codes</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+            Real-time monitor of active 6-digit verification codes for Sign Up and Password Reset sessions.
+          </p>
+          <div id="active-otps-container" style="display: flex; gap: 10px; flex-wrap: wrap; min-height: 38px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">No active OTP requests pending verification.</span>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -804,6 +821,26 @@
         // Update stats
         document.getElementById('stat-user-count').textContent = allUsers.length;
         document.getElementById('table-record-count').textContent = `${allUsers.length} Records`;
+
+        // Render Active OTP Sessions
+        const otps = data.active_otps || [];
+        const otpBadge = document.getElementById('active-otp-count-badge');
+        if (otpBadge) otpBadge.textContent = `${otps.length} Active Codes`;
+        const otpContainer = document.getElementById('active-otps-container');
+        if (otpContainer) {
+          if (otps.length === 0) {
+            otpContainer.innerHTML = '<span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">No active OTP requests pending verification.</span>';
+          } else {
+            otpContainer.innerHTML = otps.map(o => `
+              <div style="background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 6px; padding: 6px 12px; font-family: var(--font-mono); font-size: 0.76rem; display: flex; align-items: center; gap: 10px;">
+                <span style="color: #ffffff; font-weight: 700;">${o.email}</span>
+                <span style="background: #00ff88; color: #000; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing: 2px;">${o.otp}</span>
+                <span style="color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem;">[${o.purpose}]</span>
+                <span style="color: #38bdf8; font-size: 0.7rem;">${o.expires_in}s left</span>
+              </div>
+            `).join('');
+          }
+        }
 
         renderUserTable(allUsers);
         logEvent('sync', `Loaded ${allUsers.length} farmers from database.json`, 'success');
