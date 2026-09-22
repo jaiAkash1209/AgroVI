@@ -471,10 +471,6 @@ export const Auth = {
         const data = await res.json();
         if (res.ok && data.success) {
           showToast(`New verification code sent to ${data.masked_email || this.pendingSignup.email}!`);
-          const codeSpan = document.getElementById('signup-preview-code');
-          if (data.dev_preview_otp && codeSpan) {
-            codeSpan.textContent = data.dev_preview_otp;
-          }
           if (this.signupOtpHandler) {
             this.signupOtpHandler.clear();
             this.signupOtpHandler.focusFirst();
@@ -698,10 +694,6 @@ export const Auth = {
         const data = await res.json();
         if (res.ok && data.success) {
           showToast(`New code sent to ${data.masked_email || this.forgotState.email}!`);
-          const codeSpan = document.getElementById('forgot-preview-code');
-          if (data.dev_preview_otp && codeSpan) {
-            codeSpan.textContent = data.dev_preview_otp;
-          }
           if (this.forgotOtpHandler) {
             this.forgotOtpHandler.clear();
             this.forgotOtpHandler.focusFirst();
