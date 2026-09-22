@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroVI — Secret Developer & Operations Console</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #060907;
+      --bg-surface: #0c140f;
+      --bg-card: #111d16;
+      --bg-card-hover: #16261d;
+      --border-subtle: #1e3326;
+      --border-bright: #2d5a3c;
+      --text-main: #e8f5ec;
+      --text-muted: #8aa393;
+      --text-dim: #546e5e;
+      --accent-green: #00ff88;
+      --accent-emerald: #10b981;
+      --accent-teal: #14b8a6;
+      --accent-red: #ef4444;
+      --accent-amber: #f59e0b;
+      --accent-blue: #38bdf8;
+      --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    /* Top Console Header */
+    .dev-header {
+      background: rgba(12, 20, 15, 0.95);
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 28px;
+    }
+
+    .dev-header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stealth-badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--accent-green);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stealth-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .dev-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dev-title span {
+      color: var(--accent-green);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-muted);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-outline:hover {
+      color: #ffffff;
+      border-color: var(--border-bright);
+      background: var(--bg-card);
+    }
+
+    .btn-green {
+      background: var(--accent-green);
+      color: #031008;
+      font-weight: 700;
+    }
+
+    .btn-green:hover {
+      background: #1aff94;
+      box-shadow: 0 0 16px rgba(0, 255, 136, 0.4);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: var(--accent-red);
+      color: #ffffff;
+    }
+
+    /* Main Container */
+    .dev-container {
+      max-width: 1400px;
+      margin: 28px auto 0;
+      padding: 0 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Grid Layout */
+    .dev-grid-top {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 980px) {
+      .dev-grid-top {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .dev-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 22px;
+      position: relative;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title svg {
+      color: var(--accent-green);
+    }
+
+    /* Developer Profile Card */
+    .dev-profile-box {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .dev-avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #10b981 0%, #064e3b 100%);
+      border: 2px solid var(--accent-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.25);
+      flex-shrink: 0;
+    }
+
+    .dev-profile-info {
+      flex: 1;
+    }
+
+    .dev-name {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+
+    .dev-role {
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      font-family: var(--font-mono);
+      margin-bottom: 12px;
+    }
+
+    .dev-meta-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .dev-meta-item {
+      background: var(--bg-surface);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .dev-meta-label {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .dev-meta-val {
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      word-break: break-all;
+    }
+
+    /* System Stats Grid */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-metric-card {
+      background: var(--bg-surface);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 14px;
+      border-radius: 8px;
+    }
+
+    .stat-metric-label {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .stat-metric-num {
+      font-size: 1.4rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: #ffffff;
+      margin: 4px 0;
+    }
+
+    .stat-metric-sub {
+      font-size: 0.75rem;
+      color: var(--accent-green);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Live Database Table */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    table.dev-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      text-align: left;
+    }
+
+    table.dev-table th {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.72rem;
+    }
+
+    table.dev-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }
+
+    table.dev-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .hash-badge {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      color: #a7f3d0;
+      cursor: pointer;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .hash-badge:hover {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    /* Diagnostics & Tools Section */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .tool-box {
+      background: var(--bg-surface);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .tool-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-mono {
+      width: 100%;
+      background: #040705;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      outline: none;
+    }
+
+    .input-mono:focus {
+      border-color: var(--accent-green);
+    }
+
+    .hash-result-box {
+      background: #030504;
+      border: 1px dashed var(--border-bright);
+      padding: 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent-green);
+      word-break: break-all;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Terminal Console Log */
+    .terminal-box {
+      background: #030504;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: #94a3b8;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .log-line {
+      margin-bottom: 4px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .log-time {
+      color: var(--text-dim);
+    }
+
+    .log-tag-info { color: var(--accent-blue); }
+    .log-tag-success { color: var(--accent-green); }
+    .log-tag-warn { color: var(--accent-amber); }
+    .log-tag-error { color: var(--accent-red); }
+
+    /* Toast */
+    #admin-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f2316;
+      border: 1px solid var(--accent-green);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
+    }
+
+    #admin-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dev Header -->
+  <header class="dev-header">
+    <div class="dev-header-inner">
+      <div class="brand-group">
+        <div class="stealth-badge">
+          <span class="stealth-pulse"></span>
+          STEALTH CONSOLE
+        </div>
+        <h1 class="dev-title">AgroVI <span>/admin1</span></h1>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-outline" id="btn-refresh" title="Reload Database">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Sync DB
+        </button>
+        <button class="btn btn-outline" id="btn-export-json" title="Download database.json">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export JSON
+        </button>
+        <a href="/" class="btn btn-green">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Open App
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dev Main Container -->
+  <main class="dev-container">
+
+    <!-- Top Section: Developer Details & System Metrics -->
+    <div class="dev-grid-top">
+      
+      <!-- Developer Profile & Architecture -->
+      <div class="dev-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Developer Architecture & Lead Details
+          </h2>
+          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-green);">CORE SPECIFICATION</span>
+        </div>
+
+        <div class="dev-profile-box">
+          <div class="dev-avatar">JA</div>
+          <div class="dev-profile-info">
+            <div class="dev-name">T Jai Akash</div>
+            <div class="dev-role">Lead System Architect & Core Platform Developer</div>
+            <p style="font-size: 0.82rem; color: var(--text-muted);">
+              Full-Stack Architect for the AgroVI Smart Agriculture Platform. Designed high-performance DualStack non-blocking network core, cryptographic SHA-256 salted security module, and real-time cloud sheet synchronization engine.
+            </p>
+          </div>
+        </div>
+
+        <div class="dev-meta-list">
+          <div class="dev-meta-item">
+            <div class="dev-meta-label">Author Email</div>
+            <div class="dev-meta-val">tm343404@gmail.com</div>
+          </div>
+          <div class="dev-meta-item">
+            <div class="dev-meta-label">Architecture Version</div>
+            <div class="dev-meta-val">v2.4.0 (Enterprise DualStack)</div>
+          </div>
+          <div class="dev-meta-item">
+            <div class="dev-meta-label">Cryptographic Engine</div>
+            <div class="dev-meta-val">SHA-256 + Salt (:agrovi_salt_2026)</div>
+          </div>
+          <div class="dev-meta-item">
+            <div class="dev-meta-label">Cloud Webhook State</div>
+            <div class="dev-meta-val" id="sheet-status-text">Connected & Active</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Server & Protocol Metrics -->
+      <div class="dev-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            Server Runtime & Network
+          </h2>
+          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-green);" id="live-clock">--:--:--</span>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-metric-card">
+            <div class="stat-metric-label">Server Mode</div>
+            <div class="stat-metric-num" style="font-size: 1.1rem; color: var(--accent-green);">DualStack</div>
+            <div class="stat-metric-sub">IPv6 [::1] + IPv4 127.0.0.1</div>
+          </div>
+          <div class="stat-metric-card">
+            <div class="stat-metric-label">Local Auth Speed</div>
+            <div class="stat-metric-num" style="color: var(--accent-blue);" id="local-latency-display">~8 ms</div>
+            <div class="stat-metric-sub">Ultra low latency response</div>
+          </div>
+          <div class="stat-metric-card">
+            <div class="stat-metric-label">Total Farmers Registered</div>
+            <div class="stat-metric-num" id="stat-user-count">--</div>
+            <div class="stat-metric-sub">In local database.json</div>
+          </div>
+          <div class="stat-metric-card">
+            <div class="stat-metric-label">Google Sheet Mirror</div>
+            <div class="stat-metric-num" style="font-size: 1.05rem;" id="sheet-ping-display">Ready</div>
+            <div class="stat-metric-sub">
+              <button id="btn-ping-sheet" style="background: none; border: none; color: var(--accent-green); cursor: pointer; text-decoration: underline; font-family: var(--font-mono); font-size: 0.75rem;">
+                Ping Sheet Latency
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; background: var(--bg-surface); padding: 10px 14px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-dim); display: flex; justify-content: space-between; align-items: center;">
+          <span>Database File: <code style="color: var(--text-main);">data/database.json</code></span>
+          <span style="color: var(--accent-green);">LIVE WATCHING</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Live Database Inspector & User Management -->
+    <div class="dev-card">
+      <div class="card-header">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <h2 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/><polyline points="14 2 14 8 20 8"/><path d="M5 17h14"/><path d="M5 12h14"/></svg>
+            Registered Users & Password Hash Explorer
+          </h2>
+          <span id="table-record-count" class="stealth-badge" style="font-size: 0.68rem;">0 Records</span>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="filter-input" placeholder="Search farmer, username, email..." class="input-mono" style="margin-bottom: 0; width: 260px; font-size: 0.78rem;">
+          <button class="btn btn-outline" id="btn-add-modal" style="font-size: 0.78rem;">+ Insert Record</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="dev-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Farm Size</th>
+              <th>Role</th>
+              <th>SHA-256 Password Hash (Salted)</th>
+              <th>Created Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body">
+            <tr>
+              <td colspan="10" style="text-align: center; color: var(--text-dim); padding: 30px;">Loading database records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Diagnostics & Tools Suite -->
+    <div class="dev-card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Developer Diagnostic Tools & Hash Utilities
+        </h2>
+        <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-blue);">OFFLINE UTILITIES</span>
+      </div>
+
+      <div class="tools-grid">
+        
+        <!-- Tool 1: Live SHA-256 Hash Generator -->
+        <div class="tool-box">
+          <div class="tool-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Live SHA-256 Salted Hash Generator
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+            Computes the exact hash with salt <code style="color: var(--accent-green);">:agrovi_salt_2026</code> in real time.
+          </p>
+          <input type="text" id="hash-input" placeholder="Type plain password (e.g. Akash@2007)" class="input-mono">
+          <div class="hash-result-box" id="hash-output" title="Click to copy">
+            Enter text above to preview cryptographic hash...
+          </div>
+        </div>
+
+        <!-- Tool 2: Fast API Test Runner -->
+        <div class="tool-box">
+          <div class="tool-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            API Endpoint Benchmark Tester
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
+            Execute synthetic test requests to verify local DualStack speeds.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-outline" id="test-btn-users" style="font-size: 0.75rem;">Test /api/users</button>
+            <button class="btn btn-outline" id="test-btn-login" style="font-size: 0.75rem;">Test /api/login Speed</button>
+            <button class="btn btn-outline" id="test-btn-reset-storage" style="font-size: 0.75rem;">Clear Browser Cache</button>
+          </div>
+          <div id="test-runner-output" style="margin-top: 10px; font-family: var(--font-mono); font-size: 0.74rem; color: var(--accent-green); min-height: 24px;">
+            Ready to test.
+          </div>
+        </div>
+
+        <!-- Tool 3: Quick Direct Sheet Viewer -->
+        <div class="tool-box">
+          <div class="tool-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Connected Google Spreadsheet
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+            Cloud database replica connected to this system:
+          </p>
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: #6ee7b7; background: #030504; padding: 8px; border-radius: 4px; margin-bottom: 10px; word-break: break-all;">
+            ID: 1N0IpFr02qMJDGb3t-zwneWXvonPJNSSB-DCe2_oQVmQ
+          </div>
+          <a href="https://docs.google.com/spreadsheets/d/1N0IpFr02qMJDGb3t-zwneWXvonPJNSSB-DCe2_oQVmQ/edit" target="_blank" class="btn btn-outline" style="width: 100%; justify-content: center; font-size: 0.75rem;">
+            Open Google Spreadsheet &#8599;
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Developer Activity Stream & Console -->
+    <div class="dev-card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Operations & Traffic Log
+        </h2>
+        <button id="btn-clear-log" style="background: none; border: none; color: var(--text-dim); cursor: pointer; font-family: var(--font-mono); font-size: 0.72rem;">Clear Terminal</button>
+      </div>
+
+      <div class="terminal-box" id="terminal-stream">
+        <div class="log-line">
+          <span class="log-time">[INIT]</span>
+          <span class="log-tag-success">READY</span>
+          <span>Stealth Developer Console loaded. Listening for events...</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="admin-toast">Event recorded</div>
+
+  <!-- Developer Console Script -->
+  <script type="module">
+    const SALT = ":agrovi_salt_2026";
+    let allUsers = [];
+
+    // Helper: Toast
+    function showToast(msg) {
+      const t = document.getElementById('admin-toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    // Helper: Append log
+    function logEvent(tag, message, type = 'info') {
+      const box = document.getElementById('terminal-stream');
+      const now = new Date().toTimeString().split(' ')[0];
+      const div = document.createElement('div');
+      div.className = 'log-line';
+      div.innerHTML = `
+        <span class="log-time">[${now}]</span>
+        <span class="log-tag-${type}">[${tag.toUpperCase()}]</span>
+        <span>${message}</span>
+      `;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Live Clock
+    setInterval(() => {
+      document.getElementById('live-clock').textContent = new Date().toTimeString().split(' ')[0];
+    }, 1000);
+
+    // Compute SHA-256 with salt in browser
+    async function hashWithSalt(password) {
+      if (!password) return '';
+      const enc = new TextEncoder();
+      const buffer = await crypto.subtle.digest('SHA-256', enc.encode(password + SALT));
+      return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Load Database Dump
+    async function fetchDatabase() {
+      try {
+        logEvent('sync', 'Fetching database dump from /api/admin/dump...', 'info');
+        const res = await fetch('/api/admin/dump');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        allUsers = data.users || [];
+
+        // Update stats
+        document.getElementById('stat-user-count').textContent = allUsers.length;
+        document.getElementById('table-record-count').textContent = `${allUsers.length} Records`;
+
+        renderUserTable(allUsers);
+        logEvent('sync', `Loaded ${allUsers.length} farmers from database.json`, 'success');
+      } catch (err) {
+        logEvent('error', 'Failed to load database: ' + err.message, 'error');
+        showToast('Error syncing database');
+      }
+    }
+
+    // Render User Table
+    function renderUserTable(users) {
+      const tbody = document.getElementById('user-table-body');
+      tbody.innerHTML = '';
+
+      if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-dim); padding: 30px;">No registered farmers found in database.json</td></tr>`;
+        return;
+      }
+
+      users.forEach(u => {
+        const tr = document.createElement('tr');
+        const hashDisplay = u.passwordHash || 'no_hash_stored';
+        tr.innerHTML = `
+          <td style="color: var(--accent-green); font-weight: 700;">${u.id || '--'}</td>
+          <td style="font-weight: 600; color: #ffffff;">${u.username || '--'}</td>
+          <td>${u.fullname || '--'}</td>
+          <td style="color: #93c5fd;">${u.email || '--'}</td>
+          <td>${u.phone || '--'}</td>
+          <td>${u.farmSize || '15'} ac</td>
+          <td><span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #6ee7b7; padding: 2px 6px; border-radius: 4px;">${u.role || 'Farmer'}</span></td>
+          <td>
+            <span class="hash-badge" title="Click to copy SHA-256 hash" data-hash="${hashDisplay}">
+              ${hashDisplay.slice(0, 16)}...
+            </span>
+          </td>
+          <td style="color: var(--text-dim); font-size: 0.75rem;">${(u.createdAt || '').slice(0, 10)}</td>
+          <td>
+            <button class="btn btn-danger btn-delete-user" data-id="${u.id}" data-user="${u.username}" style="padding: 3px 8px; font-size: 0.72rem;">
+              Delete
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Bind Hash Copy
+      document.querySelectorAll('.hash-badge').forEach(badge => {
+        badge.addEventListener('click', () => {
+          const h = badge.getAttribute('data-hash');
+          navigator.clipboard.writeText(h);
+          showToast('Copied full SHA-256 hash to clipboard!');
+          logEvent('copy', `Hash copied for inspection: ${h.slice(0, 20)}...`, 'info');
+        });
+      });
+
+      // Bind Delete Buttons
+      document.querySelectorAll('.btn-delete-user').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const username = btn.getAttribute('data-user');
+          if (!confirm(`Are you sure you want to delete user '${username}' (${id}) from database.json?`)) return;
+
+          try {
+            const res = await fetch('/api/admin/delete-user', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id, username })
+            });
+            const data = await res.json();
+            if (data.success) {
+              showToast(`Deleted ${username}`);
+              logEvent('delete', `Deleted user ${username} (${id})`, 'warn');
+              fetchDatabase();
+            } else {
+              showToast(data.message || 'Deletion failed');
+            }
+          } catch (e) {
+            showToast('Error communicating with server');
+          }
+        });
+      });
+    }
+
+    // Filter table
+    document.getElementById('filter-input').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      const filtered = allUsers.filter(u => 
+        (u.username && u.username.toLowerCase().includes(q)) ||
+        (u.fullname && u.fullname.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.phone && u.phone.includes(q))
+      );
+      renderUserTable(filtered);
+    });
+
+    // Hash Generator Tool
+    const hashInput = document.getElementById('hash-input');
+    const hashOutput = document.getElementById('hash-output');
+    hashInput.addEventListener('input', async () => {
+      const val = hashInput.value;
+      if (!val) {
+        hashOutput.textContent = 'Enter text above to preview cryptographic hash...';
+        return;
+      }
+      const hash = await hashWithSalt(val);
+      hashOutput.textContent = hash;
+    });
+
+    hashOutput.addEventListener('click', () => {
+      if (hashOutput.textContent.length === 64) {
+        navigator.clipboard.writeText(hashOutput.textContent);
+        showToast('Hash copied to clipboard!');
+      }
+    });
+
+    // Ping Google Sheets Web App
+    document.getElementById('btn-ping-sheet').addEventListener('click', async () => {
+      const display = document.getElementById('sheet-ping-display');
+      display.textContent = 'Pinging...';
+      logEvent('ping', 'Pinging Google Sheets Web App endpoint across internet...', 'info');
+
+      try {
+        const res = await fetch('/api/admin/ping-sheet', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          display.textContent = `${data.latency_ms} ms`;
+          display.style.color = '#38bdf8';
+          logEvent('ping', `Google Sheet replied in ${data.latency_ms} ms (HTTP ${data.status})`, 'success');
+          showToast(`Sheet Response: ${data.latency_ms} ms`);
+        } else {
+          display.textContent = 'Error';
+          display.style.color = 'var(--accent-red)';
+          logEvent('error', `Ping error: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        display.textContent = 'Timeout';
+        logEvent('error', `Ping timeout: ${err.message}`, 'error');
+      }
+    });
+
+    // Benchmark /api/login Speed
+    document.getElementById('test-btn-login').addEventListener('click', async () => {
+      const out = document.getElementById('test-runner-output');
+      out.textContent = 'Benchmarking /api/login...';
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 't_jai_akash', password: 'Akash@2007' })
+        });
+        const elapsed = (performance.now() - t0).toFixed(2);
+        const data = await res.json();
+        out.textContent = `[SUCCESS] /api/login responded in ${elapsed} ms (HTTP ${res.status})`;
+        document.getElementById('local-latency-display').textContent = `${elapsed} ms`;
+        logEvent('bench', `Tested /api/login: ${elapsed} ms (${data.message})`, 'success');
+      } catch (e) {
+        out.textContent = `[FAILED] ${e.message}`;
+      }
+    });
+
+    // Test /api/users
+    document.getElementById('test-btn-users').addEventListener('click', async () => {
+      const out = document.getElementById('test-runner-output');
+      out.textContent = 'Benchmarking /api/users...';
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/users');
+        const elapsed = (performance.now() - t0).toFixed(2);
+        const data = await res.json();
+        out.textContent = `[SUCCESS] /api/users responded in ${elapsed} ms (${data.count} users)`;
+        logEvent('bench', `Tested /api/users: ${elapsed} ms`, 'success');
+      } catch (e) {
+        out.textContent = `[FAILED] ${e.message}`;
+      }
+    });
+
+    // Clear Browser Cache
+    document.getElementById('test-btn-reset-storage').addEventListener('click', () => {
+      sessionStorage.clear();
+      localStorage.removeItem('agrovi_user');
+      showToast('Browser cache and sessions cleared!');
+      logEvent('cache', 'Cleared sessionStorage and auth tokens.', 'warn');
+    });
+
+    // Export Database as JSON
+    document.getElementById('btn-export-json').addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allUsers, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `agrovi_database_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      logEvent('export', 'Database exported to local JSON file.', 'info');
+      showToast('Database exported!');
+    });
+
+    // Insert Record Modal
+    document.getElementById('btn-add-modal').addEventListener('click', async () => {
+      const fullname = prompt("Enter Farmer Full Name:");
+      if (!fullname) return;
+      const email = prompt("Enter Farmer Email:");
+      const password = prompt("Enter Password:");
+      if (!password) return;
+
+      const pHash = await hashWithSalt(password);
+      const payload = {
+        fullname,
+        email: email || `${fullname.toLowerCase().replace(/\s+/g, '')}@agrovi.in`,
+        phone: '+91 98000 11111',
+        farmSize: '25',
+        passwordHash: pHash,
+        role: 'Certified Farmer'
+      };
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Farmer added to database!');
+          logEvent('insert', `Added new farmer: ${fullname}`, 'success');
+          fetchDatabase();
+        } else {
+          showToast(data.message || 'Failed to insert');
+        }
+      } catch (e) {
+        showToast('Insert failed: ' + e.message);
+      }
+    });
+
+    // Refresh & Clear Log buttons
+    document.getElementById('btn-refresh').addEventListener('click', fetchDatabase);
+    document.getElementById('btn-clear-log').addEventListener('click', () => {
+      document.getElementById('terminal-stream').innerHTML = '';
+      logEvent('sys', 'Terminal log cleared.', 'info');
+    });
+
+    // Initialize
+    fetchDatabase();
+  </script>
+</body>
+</html>

@@ -76,7 +76,7 @@ export const Security = {
    * @param {string} salt
    * @returns {Promise<string>} Hex representation of SHA-256 hash
    */
-  async hashPassword(password, salt = 'agrovi-default-salt') {
+  async hashPassword(password, salt = ':agrovi_salt_2026') {
     try {
       const encoder = new TextEncoder();
       const data = encoder.encode(password + salt);
@@ -85,7 +85,7 @@ export const Security = {
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     } catch (e) {
       console.error('SHA-256 hashing error:', e);
-      return 'hash_fallback_' + btoa(password + salt).slice(0, 32);
+      return '';
     }
   }
 };

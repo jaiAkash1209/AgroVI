@@ -1,0 +1,60 @@
+{
+  "users": [
+    {
+      "id": "USR-1001",
+      "username": "ramesh",
+      "fullname": "Ramesh Patil",
+      "email": "ramesh@farm.in",
+      "phone": "+91 98765 43210",
+      "farmSize": 26,
+      "passwordHash": "591099016565e4e1fb41e6da7422f5b9d280c3d3b68884577e5fee07af766bde",
+      "role": "Certified Farmer",
+      "region": "Nashik Agri-Tech Corridor, MH",
+      "createdAt": "2026-09-22T08:00:00.000Z"
+    },
+    {
+      "id": "USR-1002",
+      "username": "anil_kumar",
+      "fullname": "Anil Kumar",
+      "email": "anil@agrovi.ai",
+      "phone": "+91 98760 11223",
+      "farmSize": 18,
+      "role": "Certified Farmer",
+      "createdAt": "2026-09-22T08:37:24.797297Z",
+      "passwordHash": "975521fd2dbf5969286f03caa5f5575d29d54a05a87004c7040bb9e9a41df8d9"
+    },
+    {
+      "id": "USR-1003",
+      "username": "t_jai_akash",
+      "fullname": "T Jai Akash",
+      "email": "tm343404@gmail.com",
+      "phone": "+917397516336",
+      "farmSize": "15",
+      "role": "Certified Farmer",
+      "createdAt": "2026-09-22T09:08:06.982307Z",
+      "passwordHash": "80cb99ae09fe25f986bcf161fc4521d6feabcbe5272f0121f2345cd3392e48a7"
+    },
+    {
+      "id": "USR-1004",
+      "username": "suresh_reddy",
+      "fullname": "Suresh Reddy",
+      "email": "suresh@agrovi.org",
+      "phone": "+91 94444 55555",
+      "farmSize": "35",
+      "role": "Lead Agronomist",
+      "createdAt": "2026-09-22T16:59:21.153953Z",
+      "passwordHash": "10d94b6b73c8a0dde79687fa14d9016247304d086470ed2eeb81da0bbe595ce3"
+    },
+    {
+      "id": "USR-1005",
+      "username": "kavita_devi",
+      "fullname": "Kavita Devi",
+      "email": "kavita@agrovi.in",
+      "phone": "+91 91234 56789",
+      "farmSize": "40",
+      "passwordHash": "7c299651e81758efe51e5efe7f7d8e1f3829fa489104ab2f20e720427e064ffb",
+      "role": "Smart Farm Specialist",
+      "createdAt": "2026-09-22T17:05:39.512281Z"
+    }
+  ]
+}

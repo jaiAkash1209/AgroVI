@@ -7,8 +7,9 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@500;600;700;800&family=Noto+Sans+Tamil:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
 
   <script>
     (function() {
@@ -27,17 +28,26 @@
   <div class="top-bar">
     <div class="top-bar-inner container">
       <div class="contact-info">
-        <span class="contact-item">📞 Emergency Agri-Helpline: +91 1800-AGRO-AI</span>
-        <span class="contact-item">✉️ support@agrovi.ai</span>
+        <span class="contact-item">Emergency Agri-Helpline: +91 1800-AGRO-AI</span>
+        <span class="contact-item">support@agrovi.ai</span>
       </div>
       <div class="top-actions">
         <div class="lang-selector">
-          <button class="lang-btn active" data-lang="en">EN</button>
-          <button class="lang-btn" data-lang="hi">हिन्दी</button>
-          <button class="lang-btn" data-lang="ta">தமிழ்</button>
+          <select id="lang-select" class="form-input lang-select-dropdown" style="padding: 3px 8px; font-weight: 700; font-size: 11px; background: var(--green-800); color: #fff; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer;">
+            <option value="en" style="background: #1e293b; color: #fff;">English (EN)</option>
+            <option value="hi" style="background: #1e293b; color: #fff;">हिन्दी (Hindi)</option>
+            <option value="ta" style="background: #1e293b; color: #fff;">தமிழ் (Tamil)</option>
+            <option value="mr" style="background: #1e293b; color: #fff;">मराठी (Marathi)</option>
+            <option value="te" style="background: #1e293b; color: #fff;">తెలుగు (Telugu)</option>
+            <option value="kn" style="background: #1e293b; color: #fff;">ಕನ್ನಡ (Kannada)</option>
+            <option value="pa" style="background: #1e293b; color: #fff;">ਪੰਜਾਬੀ (Punjabi)</option>
+            <option value="gu" style="background: #1e293b; color: #fff;">ગુજરાતી (Gujarati)</option>
+            <option value="ml" style="background: #1e293b; color: #fff;">മലയാളം (Malayalam)</option>
+          </select>
         </div>
         <button id="theme-toggle" class="btn btn-tertiary theme-btn" aria-label="Toggle light/dark mode">
-          <span class="theme-icon">🌙</span>
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
       </div>
     </div>
@@ -47,13 +57,12 @@
   <header class="header">
     <div class="header-inner container">
       <a href="index.html" class="logo">
-        <span class="logo-mark">🌿</span>
+        <span class="logo-mark" style="color: var(--color-accent); font-weight: 900;">•</span>
         <span class="logo-text">AgroVI</span>
         <span class="logo-badge">SECURE AUTH</span>
       </a>
       <nav class="nav">
-        <a href="index.html" class="nav-link">← Back to Home</a>
-        <a href="dashboard.html" class="nav-link">Demo Dashboard</a>
+        <a href="index.html" class="nav-link" data-i18n="backToHome">← Back to Home</a>
       </nav>
     </div>
   </header>
@@ -61,85 +70,90 @@
   <!-- Auth Portal Container -->
   <main class="auth-wrapper">
     <div class="auth-card">
-      <div class="auth-header-badge">
-        <span class="shield-icon">🛡️</span> SHA-256 Web Crypto Protection Active
-      </div>
-
       <!-- Tab Switcher -->
       <div class="auth-tab-bar">
-        <button class="auth-tab-btn active" data-tab="tab-login" data-i18n="loginBtn">Farmer Login</button>
-        <button class="auth-tab-btn" data-tab="tab-register">New User Registration</button>
-        <button class="auth-tab-btn" data-tab="tab-forgot">Forgot Password?</button>
+        <button class="auth-tab-btn active" data-tab="tab-login" data-i18n="loginBtn">Login</button>
+        <button class="auth-tab-btn" data-tab="tab-register" data-i18n="signUpBtn">Sign Up</button>
+        <button class="auth-tab-btn" data-tab="tab-forgot" data-i18n="forgotPassTab">Forgot Password?</button>
       </div>
 
       <!-- TAB 1: LOGIN -->
       <div id="tab-login" class="auth-tab-pane active">
-        <h2 class="auth-title">Welcome to AgroVI AI Portal</h2>
-        <p class="auth-subtitle">Enter your registered credentials to access your smart farm telemetry.</p>
+        <h2 class="auth-title" data-i18n="welcomeTitle">Welcome to AgroVI Portal</h2>
+        <p class="auth-subtitle" data-i18n="welcomeDesc">Enter your registered credentials to access your smart farm telemetry.</p>
 
         <form id="login-form" class="auth-form">
           <div class="form-group">
-            <label for="login-username">Username or Mobile / Email</label>
+            <label for="login-username" data-i18n="usernameLabel">Username or Mobile / Email</label>
             <input type="text" id="login-username" class="form-input" placeholder="e.g. Ramesh Patil or ramesh@farm.in" required>
           </div>
 
           <div class="form-group">
-            <label for="login-password">Password</label>
+            <label for="login-password" data-i18n="passwordLabel">Password</label>
             <input type="password" id="login-password" class="form-input" placeholder="••••••••••••" required>
           </div>
 
           <div class="form-row flex-between">
             <label class="checkbox-label">
-              <input type="checkbox" checked> Remember this device
+              <input type="checkbox" checked> <span data-i18n="rememberMe">Remember this device</span>
             </label>
-            <span class="security-indicator">🔒 Salted SHA-256 Hash</span>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full btn-large">Authenticate & Launch Dashboard →</button>
+          <button type="submit" class="btn btn-primary btn-full btn-large" data-i18n="loginSubmit">Login</button>
         </form>
       </div>
 
       <!-- TAB 2: REGISTER -->
       <div id="tab-register" class="auth-tab-pane">
-        <h2 class="auth-title">Create New AgroVI Account</h2>
+        <h2 class="auth-title" data-i18n="createAccountTitle">Create New AgroVI Account</h2>
         <p class="auth-subtitle">Join over 12,000+ smart farmers utilizing AI crop disease detection and soil telemetry.</p>
 
         <form id="register-form" class="auth-form">
           <div class="form-row">
             <div class="form-group flex-1">
-              <label for="reg-fullname">Full Name *</label>
+              <label for="reg-fullname" data-i18n="fullNameLabel">Full Name *</label>
               <input type="text" id="reg-fullname" class="form-input" placeholder="e.g. Ramesh Patil" required>
             </div>
             <div class="form-group flex-1">
-              <label for="reg-phone">Mobile Phone Number *</label>
+              <label for="reg-phone" data-i18n="phoneLabel">Mobile Phone Number *</label>
               <input type="tel" id="reg-phone" class="form-input" placeholder="+91 98765 43210" required>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group flex-1">
-              <label for="reg-email">Email Address *</label>
+              <label for="reg-email" data-i18n="emailLabel">Email Address *</label>
               <input type="email" id="reg-email" class="form-input" placeholder="farmer@agrovi.ai" required>
             </div>
             <div class="form-group flex-1">
-              <label for="reg-farmsize">Farm Size (Acres) *</label>
+              <label for="reg-farmsize" data-i18n="farmSizeLabel">Farm Size (Acres) *</label>
               <input type="number" id="reg-farmsize" class="form-input" placeholder="e.g. 15 Acres" required>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="reg-password">Account Password (Min 8 Characters) *</label>
+            <label for="reg-password" data-i18n="accountPassLabel">Account Password (Min 8 Characters) *</label>
             <input type="password" id="reg-password" class="form-input" placeholder="••••••••••••" required>
+            
+            <div class="pass-meter-wrapper margin-top-sm">
+              <div class="flex-between font-mono" style="font-size: 10px;">
+                <span>Password Strength:</span>
+                <strong id="pass-strength-text" style="color: var(--color-primary);">Too Short</strong>
+              </div>
+              <div class="progress-track margin-top-sm" style="height: 4px; background: var(--grey-300); border-radius: 2px;">
+                <div id="pass-strength-bar" style="width: 10%; height: 100%; background: var(--red-500); border-radius: 2px; transition: all 0.2s;"></div>
+              </div>
+            </div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full btn-large">Register & Initialize Farm Space →</button>
+          <button type="submit" class="btn btn-primary btn-full btn-large" data-i18n="registerSubmit">Sign Up</button>
         </form>
       </div>
 
       <!-- TAB 3: FORGOT PASSWORD -->
       <div id="tab-forgot" class="auth-tab-pane">
-        <h2 class="auth-title">Reset Your AgroVI Password</h2>
-        <p class="auth-subtitle">Enter your registered email address to receive a secure password reset link and OTP.</p>
+        <h2 class="auth-title">Reset Your Password</h2>
+        <p class="auth-subtitle">Enter your registered email address to receive a password reset link.</p>
 
         <form id="forgot-form" class="auth-form">
           <div class="form-group">
@@ -147,7 +161,7 @@
             <input type="email" id="forgot-email" class="form-input" placeholder="farmer@agrovi.ai" required>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full btn-large">Send Reset Link & Verification Code</button>
+          <button type="submit" class="btn btn-primary btn-full btn-large" data-i18n="sendResetSubmit">Send Reset Link</button>
         </form>
       </div>
     </div>
@@ -162,18 +176,12 @@
   <script type="module">
     import { Auth } from './js/auth.js';
     import { initTheme } from './js/theme.js';
-    import { setLanguage } from './js/i18n.js';
+    import { initLanguage } from './js/i18n.js';
 
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
+      initLanguage();
       Auth.init();
-
-      document.querySelectorAll('.lang-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const lang = btn.getAttribute('data-lang');
-          setLanguage(lang);
-        });
-      });
     });
   </script>
 </body>

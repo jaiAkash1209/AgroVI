@@ -42,7 +42,7 @@ export const VoiceAssistant = {
     this.recognition.onstart = () => {
       this.isListening = true;
       this.updateMicUI(true);
-      showToast('🎙️ Listening for agri voice command…');
+      showToast('Listening for agri voice command…');
     };
 
     this.recognition.onend = () => {
@@ -89,7 +89,7 @@ export const VoiceAssistant = {
       'show mandi prices'
     ];
     const picked = commands[Math.floor(Math.random() * commands.length)];
-    showToast(`🎙️ Simulated Voice Command: "${picked}"`);
+    showToast(`Simulated Voice Command: "${picked}"`);
     this.processVoiceCommand(picked);
   },
 
@@ -142,10 +142,10 @@ export const VoiceAssistant = {
     if (!micBtn) return;
     if (listening) {
       micBtn.classList.add('listening');
-      micBtn.innerHTML = '🎙️ Listening…';
+      micBtn.innerHTML = '<span class="status-dot-pulse"></span> Listening…';
     } else {
       micBtn.classList.remove('listening');
-      micBtn.innerHTML = '🎙️ Voice Agent';
+      micBtn.innerHTML = 'Voice Agent';
     }
   }
 };
