@@ -11,13 +11,15 @@
  */
 
 export const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDummyKeyReplaceWithYourOwnApiKey",
-  authDomain: "agrovi-auth.firebaseapp.com",
-  projectId: "agrovi-auth",
-  storageBucket: "agrovi-auth.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  apiKey: "AIzaSyBuJfMYNnf57U4Fpp3L7qigQGyKK5wbN5o",
+  authDomain: "agrovi-787a4.firebaseapp.com",
+  projectId: "agrovi-787a4",
+  storageBucket: "agrovi-787a4.firebasestorage.app",
+  messagingSenderId: "1075791469495",
+  appId: "1:1075791469495:web:875068bca52e836107a632",
+  measurementId: "G-VVQ03S1PKD"
 };
+
 
 let firebaseInitialized = false;
 let recaptchaVerifier = null;
