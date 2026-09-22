@@ -7,7 +7,6 @@
 import { Security } from './security.js';
 import { showToast } from './ui-toast.js';
 import { CONFIG } from './config.js';
-import { FirebasePhoneAuth } from './firebase-config.js';
 
 
 /**
@@ -171,7 +170,6 @@ export const Auth = {
   pendingSignup: null,
   forgotState: { email: '', reset_token: null },
   signupOtpHandler: null,
-  phoneOtpHandler: null,
   forgotOtpHandler: null,
 
   init() {
@@ -179,9 +177,7 @@ export const Auth = {
     this.handleUrlParams();
     this.bindPasswordToggles();
     this.bindLoginForm();
-    this.bindVerifyChoiceToggles();
     this.bindRegisterForm();
-    this.bindPhoneOtpModal();
     this.bindForgotForm();
     this.bindPasswordStrengthMeter();
   },
@@ -429,108 +425,40 @@ export const Auth = {
   },
 
   /**
-   * VERIFICATION METHOD CHOOSER (Mobile Phone SMS vs Email Code)
+   * SIGN UP FLOW WITH GMAIL-STYLE 6-DIGIT OTP VERIFICATION
    */
-  bindVerifyChoiceToggles() {
-    const choicePhone = document.getElementById('choice-verify-phone');
-    const choiceEmail = document.getElementById('choice-verify-email');
-    const hiddenChannel = document.getElementById('reg-verify-channel');
+  bindRegisterForm() {
+    const form = document.getElementById('register-form');
+    const modal = document.getElementById('signup-otp-modal');
+    const btnCloseModal = document.getElementById('btn-signup-otp-close');
+    const btnEditDetails = document.getElementById('btn-signup-edit-details');
+    const btnResend = document.getElementById('btn-signup-resend');
+    const btnVerifySubmit = document.getElementById('btn-signup-verify-submit');
+    const targetEmailSpan = document.getElementById('signup-target-email');
 
-    if (choicePhone && choiceEmail && hiddenChannel) {
-      choicePhone.addEventListener('click', () => {
-        choicePhone.classList.add('active');
-        choiceEmail.classList.remove('active');
-        hiddenChannel.value = 'phone';
-      });
+    if (!form || !modal) return;
 
-      choiceEmail.addEventListener('click', () => {
-        choiceEmail.classList.add('active');
-        choicePhone.classList.remove('active');
-        hiddenChannel.value = 'email';
-      });
-    }
-  },
-
-  /**
-   * GOOGLE FIREBASE PHONE SMS OTP MODAL BINDINGS
-   */
-  bindPhoneOtpModal() {
-    const modal = document.getElementById('phone-otp-modal');
-    const btnCloseModal = document.getElementById('btn-phone-otp-close');
-    const btnEditDetails = document.getElementById('btn-phone-edit-details');
-    const btnVerifySubmit = document.getElementById('btn-phone-verify-submit');
-
-    if (!modal) return;
-
-    this.phoneOtpHandler = setupOtpInputs('phone-otp-container', (fullCode) => {
-      this.handlePhoneOtpVerify(fullCode);
+    // Initialize 6-digit OTP input boxes for modal
+    this.signupOtpHandler = setupOtpInputs('signup-otp-container', (fullCode) => {
+      this.handleSignupOtpVerify(fullCode);
     });
 
+    // Close modal handlers
     const closeModal = () => {
       modal.classList.remove('active');
-      const submitBtn = document.getElementById('btn-register-submit');
+      const submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Create Account';
       }
     };
-
     if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
     if (btnEditDetails) btnEditDetails.addEventListener('click', closeModal);
 
-    if (btnVerifySubmit) {
-      btnVerifySubmit.addEventListener('click', () => {
-        const code = this.phoneOtpHandler ? this.phoneOtpHandler.getCode() : '';
-        this.handlePhoneOtpVerify(code);
-      });
-    }
-  },
-
-  /**
-   * SIGN UP FLOW SUPPORTING BOTH GOOGLE FIREBASE SMS AND GMAIL EMAIL OTP
-   */
-  bindRegisterForm() {
-    const form = document.getElementById('register-form');
-    const emailModal = document.getElementById('signup-otp-modal');
-    const phoneModal = document.getElementById('phone-otp-modal');
-    const btnCloseModal = document.getElementById('btn-signup-otp-close');
-    const btnEditDetails = document.getElementById('btn-signup-edit-details');
-    const btnEmailResend = document.getElementById('btn-signup-resend');
-    const btnEmailVerifySubmit = document.getElementById('btn-signup-verify-submit');
-    const targetEmailSpan = document.getElementById('signup-target-email');
-    const targetPhoneSpan = document.getElementById('phone-target-number');
-
-    if (!form) return;
-
-    // Initialize 6-digit OTP input boxes for email modal
-    if (emailModal) {
-      this.signupOtpHandler = setupOtpInputs('signup-otp-container', (fullCode) => {
-        this.handleSignupOtpVerify(fullCode);
-      });
-
-      const closeEmailModal = () => {
-        emailModal.classList.remove('active');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Create Account';
-        }
-      };
-      if (btnCloseModal) btnCloseModal.addEventListener('click', closeEmailModal);
-      if (btnEditDetails) btnEditDetails.addEventListener('click', closeEmailModal);
-
-      if (btnEmailVerifySubmit) {
-        btnEmailVerifySubmit.addEventListener('click', () => {
-          const code = this.signupOtpHandler ? this.signupOtpHandler.getCode() : '';
-          this.handleSignupOtpVerify(code);
-        });
-      }
-    }
-
-    // Resend Email OTP code handler
-    const triggerEmailResend = async () => {
+    // Resend OTP code handler
+    const triggerResend = async () => {
       if (!this.pendingSignup) return;
-      showToast('Dispatching new email verification code...');
+      showToast('Dispatching new verification code...');
       try {
         const res = await fetch('/api/otp/send', {
           method: 'POST',
@@ -548,7 +476,7 @@ export const Auth = {
             this.signupOtpHandler.clear();
             this.signupOtpHandler.focusFirst();
           }
-          startResendTimer(btnEmailResend, 45, triggerEmailResend);
+          startResendTimer(btnResend, 45, triggerResend);
         } else {
           showToast(data.message || 'Could not resend code. Please try again.');
         }
@@ -557,22 +485,13 @@ export const Auth = {
       }
     };
 
-    // Resend Phone SMS OTP handler
-    const triggerPhoneResend = async () => {
-      if (!this.pendingSignup?.phone) return;
-      showToast('Dispatching new SMS code via Google Firebase...');
-      try {
-        const res = await FirebasePhoneAuth.sendPhoneOtp(this.pendingSignup.phone, 'recaptcha-container');
-        showToast(`New SMS OTP sent to ${res.phoneNumber || this.pendingSignup.phone}!`);
-        if (this.phoneOtpHandler) {
-          this.phoneOtpHandler.clear();
-          this.phoneOtpHandler.focusFirst();
-        }
-        startResendTimer(document.getElementById('btn-phone-resend'), 45, triggerPhoneResend);
-      } catch (err) {
-        showToast('Error resending SMS: ' + (err.message || err));
-      }
-    };
+    // Manual Verify Button Click
+    if (btnVerifySubmit) {
+      btnVerifySubmit.addEventListener('click', () => {
+        const code = this.signupOtpHandler ? this.signupOtpHandler.getCode() : '';
+        this.handleSignupOtpVerify(code);
+      });
+    }
 
     // Sign Up Form Submit
     form.addEventListener('submit', async (e) => {
@@ -585,26 +504,20 @@ export const Auth = {
       const phone = Security.sanitizeInput(document.getElementById('reg-phone').value.trim());
       const farmSize = Security.sanitizeInput(document.getElementById('reg-farmsize').value.trim());
       const rawPassword = document.getElementById('reg-password').value;
-      const verifyChannel = document.getElementById('reg-verify-channel')?.value || 'phone';
 
       if (!fullname || !email || !rawPassword) {
         showToast('Please fill out all required fields.');
         return;
       }
 
-      if (verifyChannel === 'phone') {
-        const digitsOnly = phone.replace(/\D/g, '');
-        if (digitsOnly.length < 10) {
-          showToast('Please enter a valid 10-digit mobile phone number.');
-          const phoneInput = document.getElementById('reg-phone');
-          if (phoneInput) phoneInput.focus();
-          return;
-        }
-      }
-
       if (rawPassword.length < 8) {
         showToast('Password must be at least 8 characters long.');
         return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending Verification Code...';
       }
 
       const passwordHash = await Security.hashPassword(rawPassword);
@@ -617,64 +530,8 @@ export const Auth = {
         farmSize: farmSize || '20',
         passwordHash,
         password: rawPassword,
-        role: 'Certified Farmer',
-        verifiedVia: verifyChannel
+        role: 'Certified Farmer'
       };
-
-      // ============================================================
-      // PATH 1: GOOGLE FIREBASE PHONE SMS VERIFICATION (10,000 Free/Mo)
-      // ============================================================
-      if (verifyChannel === 'phone') {
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Sending SMS via Google Firebase...';
-        }
-
-        try {
-          const sendResult = await FirebasePhoneAuth.sendPhoneOtp(phone, 'recaptcha-container');
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-          }
-
-          if (targetPhoneSpan) {
-            targetPhoneSpan.textContent = sendResult.phoneNumber || phone;
-          }
-
-          if (phoneModal) {
-            phoneModal.classList.add('active');
-          }
-
-          if (this.phoneOtpHandler) {
-            this.phoneOtpHandler.clear();
-            this.phoneOtpHandler.focusFirst();
-          }
-
-          startResendTimer(document.getElementById('btn-phone-resend'), 45, triggerPhoneResend);
-
-          if (sendResult.isMock) {
-            showToast('Demo Mode: Enter test code 123456 (or add keys to js/firebase-config.js)');
-          } else {
-            showToast(`SMS OTP sent to ${sendResult.phoneNumber} via Google Firebase!`);
-          }
-        } catch (err) {
-          console.error('[Firebase Phone Auth] Error:', err);
-          showToast(err.message || 'Could not send verification SMS.');
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-          }
-        }
-        return;
-      }
-
-      // ============================================================
-      // PATH 2: GMAIL / GOOGLE APPS SCRIPT EMAIL CODE VERIFICATION
-      // ============================================================
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending Verification Code...';
-      }
 
       try {
         const res = await fetch('/api/otp/send', {
@@ -699,16 +556,14 @@ export const Auth = {
           }
 
           // Open OTP Verification Modal
-          if (emailModal) {
-            emailModal.classList.add('active');
-          }
+          modal.classList.add('active');
           if (this.signupOtpHandler) {
             this.signupOtpHandler.clear();
             this.signupOtpHandler.focusFirst();
           }
 
           // Start 45s countdown timer
-          startResendTimer(btnEmailResend, 45, triggerEmailResend);
+          startResendTimer(btnResend, 45, triggerResend);
           showToast(`Verification code sent to ${data.masked_email || email}!`);
         } else {
           showToast(data.message || 'Could not send verification code.');
@@ -728,12 +583,9 @@ export const Auth = {
     });
   },
 
-  /**
-   * VERIFY EMAIL 6-DIGIT OTP & CREATE USER
-   */
   async handleSignupOtpVerify(code) {
     if (!code || code.length < 6) {
-      showToast('Please enter the full 6-digit email code.');
+      showToast('Please enter the full 6-digit code.');
       return;
     }
 
@@ -785,76 +637,6 @@ export const Auth = {
     } catch (err) {
       console.error('Error verifying OTP:', err);
       showToast('Network error while verifying code. Please try again.');
-      if (btnVerifySubmit) {
-        btnVerifySubmit.disabled = false;
-        btnVerifySubmit.textContent = originalText;
-      }
-    }
-  },
-
-  /**
-   * VERIFY GOOGLE FIREBASE PHONE 6-DIGIT SMS OTP & CREATE USER
-   */
-  async handlePhoneOtpVerify(code) {
-    if (!code || code.length < 6) {
-      showToast('Please enter the full 6-digit SMS verification code.');
-      return;
-    }
-
-    if (!this.pendingSignup) {
-      showToast('Session expired. Please fill out the registration form again.');
-      return;
-    }
-
-    const btnVerifySubmit = document.getElementById('btn-phone-verify-submit');
-    const originalText = btnVerifySubmit ? btnVerifySubmit.textContent : 'Verify SMS & Create Account';
-    if (btnVerifySubmit) {
-      btnVerifySubmit.disabled = true;
-      btnVerifySubmit.textContent = 'Verifying SMS Code...';
-    }
-
-    try {
-      // 1. Confirm code with Firebase Phone Auth
-      const firebaseResult = await FirebasePhoneAuth.verifyPhoneOtp(code);
-      console.log('[Firebase Phone Auth] Verified successfully:', firebaseResult);
-
-      // 2. Submit verified user to backend /api/register
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...this.pendingSignup,
-          phoneVerified: true,
-          verifiedVia: 'phone',
-          firebaseUid: firebaseResult.user ? firebaseResult.user.uid : null
-        })
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        const modal = document.getElementById('phone-otp-modal');
-        if (modal) modal.classList.remove('active');
-
-        // Save session
-        localStorage.setItem('agrovi_registered_user', JSON.stringify(data.user));
-        sessionStorage.setItem('agrovi_user', JSON.stringify(data.user));
-        showToast('Mobile number verified! Welcome to AgroVI. Launching dashboard...');
-
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 800);
-      } else {
-        shakeElement(document.getElementById('phone-otp-container'));
-        showToast(data.message || 'Registration failed after phone verification.');
-        if (btnVerifySubmit) {
-          btnVerifySubmit.disabled = false;
-          btnVerifySubmit.textContent = originalText;
-        }
-      }
-    } catch (err) {
-      console.error('[Firebase Phone Auth] Verification Error:', err);
-      shakeElement(document.getElementById('phone-otp-container'));
-      showToast(err.message || 'Invalid or expired SMS code. Please try again.');
       if (btnVerifySubmit) {
         btnVerifySubmit.disabled = false;
         btnVerifySubmit.textContent = originalText;
