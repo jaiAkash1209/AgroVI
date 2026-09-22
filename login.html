@@ -11,6 +11,10 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
 
+  <!-- Google Firebase App & Auth SDK (v10 compat) for Free 10,000 SMS/Month -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
   <script>
     (function() {
       const savedTheme = localStorage.getItem('agrovi-theme') || 'system';
@@ -77,8 +81,8 @@
 
         <form id="login-form">
           <div class="form-group" style="margin-bottom: 20px;">
-            <label for="login-username" class="auth-clean-label">E-mail Address</label>
-            <input type="text" id="login-username" class="auth-clean-input" placeholder="" required autocomplete="username">
+            <label for="login-username" class="auth-clean-label">E-mail Address or Mobile Number</label>
+            <input type="text" id="login-username" class="auth-clean-input" placeholder="e.g. farmer@agrovi.ai or +91 98765 43210" required autocomplete="username">
           </div>
 
           <div class="form-group" style="margin-bottom: 24px;">
@@ -148,7 +152,20 @@
             </div>
           </div>
 
-          <button type="submit" class="btn-clean-solid" id="btn-register-submit">Create Account</button>
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="auth-clean-label">Verify Account Via</label>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn-verify-choice active" id="choice-verify-phone">
+                📱 Mobile SMS (Google)
+              </button>
+              <button type="button" class="btn-verify-choice" id="choice-verify-email">
+                ✉️ Email Code
+              </button>
+            </div>
+            <input type="hidden" id="reg-verify-channel" value="phone">
+          </div>
+
+            <button type="submit" class="btn-clean-solid" id="btn-register-submit">Create Account</button>
         </form>
 
         <div class="clean-divider">
@@ -295,6 +312,52 @@
       </div>
     </div>
   </div>
+
+  <!-- GOOGLE FIREBASE PHONE SMS OTP VERIFICATION MODAL -->
+  <div id="phone-otp-modal" class="otp-overlay" role="dialog" aria-modal="true">
+    <div class="otp-card">
+      <button type="button" class="otp-close-btn" id="btn-phone-otp-close" title="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="otp-icon-wrap" style="background: rgba(16, 185, 129, 0.1); color: #059669; border-color: rgba(16, 185, 129, 0.2);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </div>
+
+      <h2 class="otp-title">Verify Mobile Number</h2>
+      <p class="otp-subtitle">
+        Google Firebase dispatched a 6-digit SMS code to<br>
+        <span id="phone-target-number" class="otp-email-target">+91 98765 43210</span>
+      </p>
+
+      <div class="otp-inputs-row" id="phone-otp-container">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input phone-otp-input" data-index="0" autofocus>
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input phone-otp-input" data-index="1">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input phone-otp-input" data-index="2">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input phone-otp-input" data-index="3">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input phone-otp-input" data-index="4">
+        <input type="text" maxlength="1" inputmode="numeric" class="otp-digit-input phone-otp-input" data-index="5">
+      </div>
+
+      <div class="otp-resend-row">
+        <span>Didn't receive SMS?</span>
+        <button type="button" class="otp-resend-btn" id="btn-phone-resend">Resend SMS (45s)</button>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-full btn-large" id="btn-phone-verify-submit">
+        Verify SMS &amp; Create Account
+      </button>
+
+      <div style="margin-top: 16px;">
+        <button type="button" id="btn-phone-edit-details" style="background: none; border: none; color: var(--color-primary); font-size: 0.82rem; cursor: pointer; text-decoration: underline;">
+          Wrong number? Edit details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Firebase Invisible reCAPTCHA Container -->
+  <div id="recaptcha-container"></div>
 
   <footer class="footer">
     <div class="footer-bottom container">

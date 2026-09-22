@@ -1579,4 +1579,35 @@ body.public-page-body, body.auth-page-body, body.dashboard-page-body {
   }
 }
 
+/* Verification Method Selector (Mobile SMS vs Email) */
+.btn-verify-choice {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.btn-verify-choice:hover {
+  border-color: var(--color-primary);
+  color: var(--color-text-main);
+}
+
+.btn-verify-choice.active {
+  background: var(--color-primary);
+  color: #ffffff !important;
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(30, 70, 32, 0.25);
+}
+
+
 

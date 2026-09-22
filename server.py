@@ -301,15 +301,21 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
 
             db = load_db()
             found_user = None
+            clean_login = "".join(filter(str.isdigit, login_id))
 
             for u in db.get("users", []):
                 u_name = str(u.get("username", "")).strip().lower()
                 u_email = str(u.get("email", "")).strip().lower()
                 u_phone = str(u.get("phone", "")).strip().lower()
+                clean_phone = "".join(filter(str.isdigit, u_phone))
 
                 if login_id in (u_name, u_email, u_phone):
                     found_user = u
                     break
+                if clean_login and clean_phone and len(clean_login) >= 10:
+                    if clean_login[-10:] == clean_phone[-10:]:
+                        found_user = u
+                        break
 
             if not found_user:
                 sheet_user = check_google_sheet_login(login_id, raw_password, incoming_hash)
@@ -389,12 +395,15 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
 
             email = str(payload.get("email", "")).strip().lower()
             phone = str(payload.get("phone", "")).strip()
+            clean_incoming_phone = "".join(filter(str.isdigit, phone))
             farm_size = payload.get("farmSize", "15")
             raw_password = str(payload.get("password", "")).strip()
             incoming_hash = str(payload.get("passwordHash", "")).strip()
             if not incoming_hash and raw_password:
                 incoming_hash = hash_password(raw_password)
             role = payload.get("role", "Certified Farmer")
+            phone_verified = payload.get("phoneVerified", False)
+            verified_via = payload.get("verifiedVia", "phone" if phone_verified else "email")
 
             if not fullname or not incoming_hash:
                 self._send_json({"success": False, "message": "Full Name and Password are required."}, 400)
@@ -411,6 +420,10 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                 if email and str(u.get("email", "")).lower() == email:
                     self._send_json({"success": False, "message": f"Email '{email}' is already registered. Please Login."}, 409)
                     return
+                u_clean_phone = "".join(filter(str.isdigit, str(u.get("phone", ""))))
+                if clean_incoming_phone and u_clean_phone and len(clean_incoming_phone) >= 10 and clean_incoming_phone[-10:] == u_clean_phone[-10:]:
+                    self._send_json({"success": False, "message": f"Mobile number '{phone}' is already registered. Please Login."}, 409)
+                    return
 
             new_id = f"USR-{len(users) + 1001}"
             now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -424,13 +437,15 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                 "farmSize": farm_size,
                 "passwordHash": incoming_hash,
                 "role": role,
+                "phoneVerified": phone_verified,
+                "verifiedVia": verified_via,
                 "createdAt": now_iso
             }
 
             users.append(new_user)
             db["users"] = users
             save_db(db)
-            print(f"[AUTH] Registered new farmer '{fullname}' ({username}) with SHA-256 hash.")
+            print(f"[AUTH] Registered new farmer '{fullname}' ({username}) via {verified_via.upper()} with SHA-256 hash.")
             sync_to_google_sheet(new_user)
 
             # Return session payload
@@ -442,6 +457,7 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                 "phone": phone,
                 "farmSize": farm_size,
                 "role": role,
+                "phoneVerified": phone_verified,
                 "token": f"AGRO_{new_id}_{os.urandom(4).hex()}"
             }
 
