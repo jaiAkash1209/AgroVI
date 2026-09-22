@@ -145,42 +145,37 @@ def mask_email(email):
     return f"{masked_name}@{domain}"
 
 def dispatch_otp_email(to_email, otp, purpose="signup", fullname="Farmer"):
-    def _worker():
-        try:
-            req_data = json.dumps({
-                "action": "send_otp",
-                "email": to_email,
-                "otp": otp,
-                "purpose": purpose,
-                "fullname": fullname
-            }).encode("utf-8")
-            req = urllib.request.Request(
-                GOOGLE_SHEET_URL,
-                data=req_data,
-                headers={"Content-Type": "application/json", "User-Agent": "AgroVI-Server/1.0"}
-            )
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                resp_body = resp.read().decode("utf-8")
-                try:
-                    data = json.loads(resp_body)
-                    if data.get("success"):
-                        print(f"[OTP DISPATCH SUCCESS] Verification email sent to {to_email} via Google Apps Script!")
-                    else:
-                        msg = data.get("message") or data.get("error")
-                        print(f"[OTP DISPATCH WARNING] Google Apps Script returned: {msg}")
-                        if "Unknown action" in str(msg):
-                            print(f" [ACTION REQUIRED] Google Apps Script in cloud needs update: paste google_apps_script.js and Deploy a New version.")
-                except Exception:
-                    print(f"[OTP DISPATCH RAW RESP] {resp_body}")
-        except Exception as e:
-            print(f"[OTP DISPATCH NOTICE] Google Apps Script email dispatch: {e}")
-
-    threading.Thread(target=_worker, daemon=True).start()
     print(f"\n==================================================")
     print(f" [GMAIL OTP DISPATCH] Recipient: {to_email}")
     print(f" [SECURITY CODE]      >>> {otp} <<< (10 min expiry)")
     print(f" [PURPOSE]            {purpose.upper()}")
     print(f"==================================================\n")
+    try:
+        req_data = json.dumps({
+            "action": "send_otp",
+            "email": to_email,
+            "otp": otp,
+            "purpose": purpose,
+            "fullname": fullname
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            GOOGLE_SHEET_URL,
+            data=req_data,
+            headers={"Content-Type": "application/json", "User-Agent": "AgroVI-Server/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            resp_body = resp.read().decode("utf-8")
+            data = json.loads(resp_body)
+            if data.get("success"):
+                print(f"[OTP DISPATCH SUCCESS] Verification email sent to {to_email} via Google Apps Script!")
+                return True, "Email sent successfully"
+            else:
+                msg = str(data.get("message") or data.get("error") or "Unknown error")
+                print(f"[OTP DISPATCH WARNING] Google Apps Script returned: {msg}")
+                return False, msg
+    except Exception as e:
+        print(f"[OTP DISPATCH ERROR] Google Apps Script dispatch failed: {e}")
+        return False, str(e)
 
 def sync_password_update_to_google_sheet(email, password_hash):
     def _worker():
@@ -539,15 +534,26 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                 "attempts": 0
             }
 
-            dispatch_otp_email(email, otp, purpose, fullname or "Farmer")
+            sent_ok, dispatch_msg = dispatch_otp_email(email, otp, purpose, fullname or "Farmer")
+            if not sent_ok:
+                if "Unknown action" in dispatch_msg:
+                    self._send_json({
+                        "success": False,
+                        "message": "Email delivery failed: Google Apps Script needs New Version deployment. Please Deploy a New Version in Google Sheets Apps Script."
+                    }, 503)
+                    return
+                else:
+                    self._send_json({
+                        "success": False,
+                        "message": f"Could not deliver email: {dispatch_msg}"
+                    }, 500)
+                    return
 
             self._send_json({
                 "success": True,
-                "message": f"Verification code sent to {mask_email(email)}",
+                "message": f"Verification code sent to {mask_email(email)}. Please check your inbox and spam folder.",
                 "masked_email": mask_email(email),
-                "expires_in": 600,
-                # In development mode, also include preview for instant testing
-                "dev_preview_otp": otp
+                "expires_in": 600
             })
             return
 

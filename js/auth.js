@@ -565,29 +565,6 @@ export const Auth = {
             this.signupOtpHandler.focusFirst();
           }
 
-          // Show security code preview and bind autofill
-          const hintBox = document.getElementById('signup-otp-preview-hint');
-          const codeSpan = document.getElementById('signup-preview-code');
-          const autoFillBtn = document.getElementById('btn-signup-autofill');
-          if (data.dev_preview_otp && hintBox && codeSpan) {
-            codeSpan.textContent = data.dev_preview_otp;
-            hintBox.style.display = 'block';
-            if (autoFillBtn && !autoFillBtn._hasAutofillBound) {
-              autoFillBtn.addEventListener('click', () => {
-                const currentOtp = codeSpan.textContent.trim();
-                const digits = currentOtp.split('');
-                digits.forEach((d, idx) => {
-                  if (this.signupOtpHandler && this.signupOtpHandler.inputs[idx]) {
-                    this.signupOtpHandler.inputs[idx].value = d;
-                    this.signupOtpHandler.inputs[idx].classList.add('has-value');
-                  }
-                });
-                this.handleSignupOtpVerify(currentOtp);
-              });
-              autoFillBtn._hasAutofillBound = true;
-            }
-          }
-
           // Start 45s countdown timer
           startResendTimer(btnResend, 45, triggerResend);
           showToast(`Verification code sent to ${data.masked_email || email}!`);
@@ -792,29 +769,6 @@ export const Auth = {
           if (this.forgotOtpHandler) {
             this.forgotOtpHandler.clear();
             this.forgotOtpHandler.focusFirst();
-          }
-
-          // Show security code preview and bind autofill
-          const hintBox = document.getElementById('forgot-otp-preview-hint');
-          const codeSpan = document.getElementById('forgot-preview-code');
-          const autoFillBtn = document.getElementById('btn-forgot-autofill');
-          if (data.dev_preview_otp && hintBox && codeSpan) {
-            codeSpan.textContent = data.dev_preview_otp;
-            hintBox.style.display = 'block';
-            if (autoFillBtn && !autoFillBtn._hasAutofillBound) {
-              autoFillBtn.addEventListener('click', () => {
-                const currentOtp = codeSpan.textContent.trim();
-                const digits = currentOtp.split('');
-                digits.forEach((d, idx) => {
-                  if (this.forgotOtpHandler && this.forgotOtpHandler.inputs[idx]) {
-                    this.forgotOtpHandler.inputs[idx].value = d;
-                    this.forgotOtpHandler.inputs[idx].classList.add('has-value');
-                  }
-                });
-                this.handleForgotOtpVerify(currentOtp);
-              });
-              autoFillBtn._hasAutofillBound = true;
-            }
           }
 
           startResendTimer(btnResendCode, 45, triggerForgotResend);
