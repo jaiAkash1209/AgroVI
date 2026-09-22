@@ -1,0 +1,100 @@
+{
+  "system": {
+    "nodeId": "ESP32-AGRO-01",
+    "status": "online",
+    "firmwareVersion": "2.4.0",
+    "irrigationMode": "AUTO",
+    "pumpActive": true,
+    "pumpPressureBar": 2.4,
+    "totalWaterUsedTodayLiters": 1421.4,
+    "lastUpdated": "2026-09-22T21:00:19.561381+00:00"
+  },
+  "zones": {
+    "1": {
+      "id": 1,
+      "name": "Zone 1: North Orchard",
+      "crop": "Pomegranate & Citrus",
+      "soilType": "Clay Loam",
+      "moisture": 48.5,
+      "temperature": 24.2,
+      "flowRate": 0.0,
+      "valveOpen": false,
+      "threshold": 35.0,
+      "dripCapacityLph": 4.0,
+      "waterUsedLiters": 380.0,
+      "lastIrrigated": "2026-09-22T18:30:00.000Z"
+    },
+    "2": {
+      "id": 2,
+      "name": "Zone 2: South Wheat Field",
+      "crop": "Wheat (PBW 550)",
+      "soilType": "Sandy Loam",
+      "moisture": 18.0,
+      "temperature": 26.8,
+      "flowRate": 6.2,
+      "valveOpen": true,
+      "threshold": 35.0,
+      "dripCapacityLph": 6.0,
+      "waterUsedLiters": 820.5,
+      "lastIrrigated": "2026-09-23T02:10:00.000Z"
+    },
+    "3": {
+      "id": 3,
+      "name": "Zone 3: Greenhouse Tomatoes",
+      "crop": "Hybrid Red Tomatoes",
+      "soilType": "Hydroponic Medium",
+      "moisture": 55.0,
+      "temperature": 24.0,
+      "flowRate": 0.0,
+      "valveOpen": false,
+      "threshold": 45.0,
+      "dripCapacityLph": 2.0,
+      "waterUsedLiters": 220.0,
+      "lastIrrigated": "2026-09-22T20:57:47.946999+00:00"
+    }
+  },
+  "history": [
+    {
+      "time": "00:00",
+      "zone1": 52,
+      "zone2": 38,
+      "zone3": 58,
+      "flow": 0.0
+    },
+    {
+      "time": "04:00",
+      "zone1": 50,
+      "zone2": 35,
+      "zone3": 56,
+      "flow": 0.0
+    },
+    {
+      "time": "08:00",
+      "zone1": 49,
+      "zone2": 33,
+      "zone3": 55,
+      "flow": 5.8
+    },
+    {
+      "time": "12:00",
+      "zone1": 47,
+      "zone2": 31,
+      "zone3": 53,
+      "flow": 6.2
+    },
+    {
+      "time": "16:00",
+      "zone1": 46,
+      "zone2": 30,
+      "zone3": 52,
+      "flow": 6.0
+    },
+    {
+      "time": "20:00",
+      "zone1": 48,
+      "zone2": 31,
+      "zone3": 54,
+      "flow": 6.2
+    }
+  ]
+}

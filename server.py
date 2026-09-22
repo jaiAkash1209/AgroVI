@@ -22,6 +22,8 @@ PORT = int(os.environ.get("PORT", sys.argv[1] if len(sys.argv) > 1 else 8000))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DB_FILE = os.path.join(DATA_DIR, "database.json")
+TELEMETRY_FILE = os.path.join(DATA_DIR, "telemetry.json")
+
 
 # Ensure database directory and file exist
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -118,6 +120,25 @@ def save_db(data):
     except Exception as e:
         print(f"[DB ERROR] Failed to save database: {e}")
         return False
+
+def load_telemetry():
+    try:
+        if os.path.exists(TELEMETRY_FILE):
+            with open(TELEMETRY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"[IOT ERROR] Failed to load telemetry: {e}")
+    return {"system": {}, "zones": {}, "history": []}
+
+def save_telemetry(data):
+    try:
+        with open(TELEMETRY_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"[IOT ERROR] Failed to save telemetry: {e}")
+        return False
+
 
 # ----------------------------------------------------
 # GMAIL-STYLE OTP VERIFICATION ENGINE
@@ -244,6 +265,37 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
             ]
             self._send_json({"success": True, "count": len(safe_users), "users": safe_users})
             return
+
+        # API: IoT Telemetry & Historical Trends
+        if parsed.path == "/api/iot/telemetry":
+            telem = load_telemetry()
+            self._send_json({"success": True, "telemetry": telem})
+            return
+
+        # API: IoT Valves Status & Mode
+        if parsed.path == "/api/iot/valves":
+            telem = load_telemetry()
+            zones = telem.get("zones", {})
+            valves_summary = {
+                zid: {
+                    "id": z.get("id"),
+                    "name": z.get("name"),
+                    "valveOpen": z.get("valveOpen", False),
+                    "threshold": z.get("threshold", 35.0),
+                    "moisture": z.get("moisture", 0.0),
+                    "flowRate": z.get("flowRate", 0.0)
+                }
+                for zid, z in zones.items()
+            }
+            self._send_json({
+                "success": True,
+                "mode": telem.get("system", {}).get("irrigationMode", "AUTO"),
+                "pumpActive": telem.get("system", {}).get("pumpActive", False),
+                "totalWaterUsedTodayLiters": telem.get("system", {}).get("totalWaterUsedTodayLiters", 0.0),
+                "valves": valves_summary
+            })
+            return
+
 
         # Route /admin1 to admin1.html
         if parsed.path in ("/admin1", "/admin1/"):
@@ -501,6 +553,99 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self._send_json({"success": False, "error": str(e), "latency_ms": round((time.perf_counter() - t0) * 1000, 2)}, 500)
                 return
+
+        # ----------------------------------------------------
+        # API: IOT VALVES ACTUATION (/api/iot/valves)
+        # ----------------------------------------------------
+        if parsed.path == "/api/iot/valves":
+            telem = load_telemetry()
+            zones = telem.get("zones", {})
+            system = telem.get("system", {})
+
+            # Change mode (AUTO vs MANUAL)
+            if "mode" in payload:
+                system["irrigationMode"] = "AUTO" if str(payload["mode"]).upper() == "AUTO" else "MANUAL"
+
+            # Toggle specific zone valve
+            if "zoneId" in payload:
+                zid = str(payload["zoneId"])
+                if zid in zones:
+                    if "valveOpen" in payload:
+                        is_open = bool(payload["valveOpen"])
+                        zones[zid]["valveOpen"] = is_open
+                        zones[zid]["flowRate"] = round(zones[zid].get("dripCapacityLph", 4.0) * 0.166, 2) if is_open else 0.0
+                        if is_open:
+                            zones[zid]["lastIrrigated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                    if "threshold" in payload:
+                        zones[zid]["threshold"] = float(payload["threshold"])
+
+            # Recalculate pump active status
+            system["pumpActive"] = any(z.get("valveOpen", False) for z in zones.values())
+            system["lastUpdated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            valve_states = {k: v.get('valveOpen') for k, v in zones.items()}
+            print(f"[IOT ACTUATION] Mode: {system.get('irrigationMode')} | Valves: {valve_states}")
+            self._send_json({"success": True, "message": "Valves updated successfully", "telemetry": telem})
+            return
+
+        # ----------------------------------------------------
+        # API: IOT TELEMETRY INGESTION (/api/iot/telemetry)
+        # ----------------------------------------------------
+        if parsed.path == "/api/iot/telemetry":
+            telem = load_telemetry()
+            zones = telem.get("zones", {})
+            system = telem.get("system", {})
+            is_auto = system.get("irrigationMode", "AUTO") == "AUTO"
+
+            # 1. Direct Zone Telemetry Update (from ESP32 or simulation)
+            if "zoneId" in payload:
+                zid = str(payload["zoneId"])
+                if zid in zones:
+                    z = zones[zid]
+                    if "moisture" in payload:
+                        z["moisture"] = round(float(payload["moisture"]), 1)
+                    if "temperature" in payload:
+                        z["temperature"] = round(float(payload["temperature"]), 1)
+                    if "flowRate" in payload:
+                        z["flowRate"] = round(float(payload["flowRate"]), 2)
+
+                    # Auto Irrigation threshold logic
+                    if is_auto:
+                        thresh = z.get("threshold", 35.0)
+                        if z["moisture"] < thresh and not z.get("valveOpen", False):
+                            z["valveOpen"] = True
+                            z["flowRate"] = round(z.get("dripCapacityLph", 4.0) * 0.166, 2)
+                            z["lastIrrigated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                            print(f"[AUTO-IRRIGATION] Zone {zid} moisture ({z['moisture']}%) < threshold ({thresh}%). Solenoid Valve opened automatically!")
+                        elif z["moisture"] >= thresh + 8.0 and z.get("valveOpen", False):
+                            z["valveOpen"] = False
+                            z["flowRate"] = 0.0
+                            print(f"[AUTO-IRRIGATION] Zone {zid} moisture ({z['moisture']}%) saturated. Solenoid Valve shut off.")
+
+            # 2. Batch telemetry update
+            if "zones" in payload and isinstance(payload["zones"], dict):
+                for zid, z_data in payload["zones"].items():
+                    if zid in zones:
+                        z = zones[zid]
+                        if "moisture" in z_data:
+                            z["moisture"] = round(float(z_data["moisture"]), 1)
+                        if "temperature" in z_data:
+                            z["temperature"] = round(float(z_data["temperature"]), 1)
+                        if "flowRate" in z_data:
+                            z["flowRate"] = round(float(z_data["flowRate"]), 2)
+                        if "valveOpen" in z_data and not is_auto:
+                            z["valveOpen"] = bool(z_data["valveOpen"])
+
+            # Accumulate water usage if valves are open
+            total_active_flow = sum(z.get("flowRate", 0.0) for z in zones.values())
+            if total_active_flow > 0:
+                system["totalWaterUsedTodayLiters"] = round(system.get("totalWaterUsedTodayLiters", 0.0) + (total_active_flow * 0.05), 1)
+
+            system["pumpActive"] = any(z.get("valveOpen", False) for z in zones.values())
+            system["lastUpdated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            save_telemetry(telem)
+
+            self._send_json({"success": True, "message": "Telemetry received", "telemetry": telem})
+            return
 
         # ----------------------------------------------------
         # OTP API: SEND OTP (/api/otp/send)

@@ -357,37 +357,313 @@
 
       <!-- VIEW 4: SMART IRRIGATION -->
       <section id="view-irrigation" class="dash-view-panel">
-        <div class="view-header">
-          <h1 class="view-title" data-i18n="irrigationTitle">Smart Irrigation & Valve Actuation</h1>
-          <p class="view-desc" data-i18n="irrigationDesc">Automated drip irrigation zone scheduling and real-time solenoid valve switches.</p>
+        <div class="view-header flex-between flex-wrap gap-sm">
+          <div>
+            <h1 class="view-title" data-i18n="irrigationTitle">Smart Irrigation & Valve Actuation</h1>
+            <p class="view-desc" data-i18n="irrigationDesc">Automated drip irrigation zone scheduling and real-time solenoid valve switches.</p>
+          </div>
+          <div class="iot-top-actions flex-align-center gap-sm">
+            <button class="btn btn-secondary btn-sm" id="btn-toggle-simulator">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              <span>ESP32 Simulator</span>
+            </button>
+            <div class="iot-connection-pill" id="iot-telemetry-status">
+              <span class="iot-pulse-dot"></span>
+              <span class="iot-status-text">ESP32 Online</span>
+            </div>
+          </div>
         </div>
 
-        <div class="zones-grid">
-          <div class="glass-panel card-padding zone-card">
-            <div class="zone-header">
-              <h3 data-i18n="zone1Title">Zone 1: North Orchard</h3>
-              <span class="badge badge-success">Moisture 48%</span>
+        <!-- System Overview Banner -->
+        <div class="glass-panel card-padding iot-summary-bar margin-top">
+          <div class="iot-summary-metric">
+            <span class="metric-label">Irrigation Mode</span>
+            <div class="iot-mode-toggle-group">
+              <button type="button" class="mode-btn active" data-mode="AUTO" id="mode-btn-auto">⚡ AUTO (FAO-56)</button>
+              <button type="button" class="mode-btn" data-mode="MANUAL" id="mode-btn-manual">🖐️ MANUAL</button>
             </div>
-            <p>Soil Type: Clay Loam | Drip Rate: 4 L/hr</p>
-            <button class="btn valve-toggle margin-top" data-zone="1" style="background-color: var(--grey-400);" data-i18n="valveOffBtn">VALVE OFF</button>
+          </div>
+          <div class="iot-summary-divider"></div>
+          <div class="iot-summary-metric">
+            <span class="metric-label">Main Booster Pump</span>
+            <div class="metric-value-row">
+              <span class="pump-led active" id="pump-led-indicator"></span>
+              <strong id="pump-status-label">ACTIVE (2.4 Bar)</strong>
+            </div>
+          </div>
+          <div class="iot-summary-divider"></div>
+          <div class="iot-summary-metric">
+            <span class="metric-label">Water Delivered Today</span>
+            <div class="metric-value-row">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--color-primary);"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+              <strong id="system-water-today">1,420.5 L</strong>
+            </div>
+          </div>
+          <div class="iot-summary-divider"></div>
+          <div class="iot-summary-metric">
+            <span class="metric-label">Node Telemetry</span>
+            <div class="metric-value-row">
+              <span class="chip chip-mono" id="iot-node-id">ESP32-AGRO-01</span>
+              <span class="metric-sub" id="iot-last-ping">Live</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Zones Grid -->
+        <div class="zones-grid margin-top">
+
+          <!-- Zone 1 -->
+          <div class="glass-panel card-padding zone-card" id="zone-card-1" data-zone="1">
+            <div class="zone-card-header flex-between">
+              <div>
+                <span class="zone-badge">ZONE 1</span>
+                <h3 class="zone-title" data-i18n="zone1Title">Zone 1: North Orchard</h3>
+                <span class="zone-subtitle">Pomegranate & Citrus • Clay Loam</span>
+              </div>
+              <span class="badge badge-success zone-moisture-badge" id="zone-badge-1">48.5% Moisture</span>
+            </div>
+
+            <!-- Gauge & Metrics Row -->
+            <div class="zone-metrics-row margin-top">
+              <div class="moisture-gauge-wrapper">
+                <div class="gauge-arc-track">
+                  <div class="gauge-arc-fill" id="gauge-fill-1" style="width: 48.5%;"></div>
+                </div>
+                <div class="flex-between gauge-labels">
+                  <span class="text-xs">0% (Wilting)</span>
+                  <span class="text-xs font-bold" id="gauge-val-1">48.5%</span>
+                  <span class="text-xs">100% (Field Cap)</span>
+                </div>
+              </div>
+
+              <div class="zone-sensor-pills">
+                <div class="sensor-pill">
+                  <span class="pill-icon">🌡️</span>
+                  <div>
+                    <span class="pill-label">Soil Temp</span>
+                    <strong class="pill-val" id="zone-temp-1">24.2 °C</strong>
+                  </div>
+                </div>
+                <div class="sensor-pill" id="flow-pill-1">
+                  <span class="pill-icon">💧</span>
+                  <div>
+                    <span class="pill-label">Drip Flow</span>
+                    <strong class="pill-val" id="zone-flow-1">0.00 L/m</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Auto Trigger Threshold Controller -->
+            <div class="zone-threshold-box margin-top">
+              <div class="flex-between">
+                <label class="threshold-label" for="thresh-slider-1">Auto-Irrigation Trigger:</label>
+                <span class="threshold-num"><strong id="thresh-val-1">35</strong>%</span>
+              </div>
+              <input type="range" class="zone-thresh-slider" id="thresh-slider-1" data-zone="1" min="20" max="60" value="35">
+              <span class="threshold-hint text-xs text-muted">Valve activates if moisture drops below threshold.</span>
+            </div>
+
+            <!-- Valve Actuation Action -->
+            <div class="zone-action-row margin-top">
+              <button class="btn valve-toggle-btn" id="valve-btn-1" data-zone="1">
+                <span class="valve-status-light"></span>
+                <span class="valve-btn-text">VALVE OFF (CLOSED)</span>
+              </button>
+            </div>
+
+            <!-- Zone Summary Footer -->
+            <div class="zone-footer flex-between margin-top-sm">
+              <span class="text-xs text-muted">Dispensed today: <strong id="zone-water-1">380.0 L</strong></span>
+              <span class="text-xs text-muted">Last run: <span id="zone-last-1">18:30 UTC</span></span>
+            </div>
           </div>
 
-          <div class="glass-panel card-padding zone-card">
-            <div class="zone-header">
-              <h3 data-i18n="zone2Title">Zone 2: South Wheat Field</h3>
-              <span class="badge badge-warning">Moisture 31%</span>
+          <!-- Zone 2 -->
+          <div class="glass-panel card-padding zone-card active-watering" id="zone-card-2" data-zone="2">
+            <div class="zone-card-header flex-between">
+              <div>
+                <span class="zone-badge">ZONE 2</span>
+                <h3 class="zone-title" data-i18n="zone2Title">Zone 2: South Wheat Field</h3>
+                <span class="zone-subtitle">Wheat (PBW 550) • Sandy Loam</span>
+              </div>
+              <span class="badge badge-warning zone-moisture-badge" id="zone-badge-2">31.0% Moisture</span>
             </div>
-            <p>Soil Type: Sandy Loam | Drip Rate: 6 L/hr</p>
-            <button class="btn valve-toggle active margin-top" data-zone="2" style="background-color: var(--green-500);" data-i18n="valveOnBtn">VALVE ON</button>
+
+            <div class="zone-metrics-row margin-top">
+              <div class="moisture-gauge-wrapper">
+                <div class="gauge-arc-track">
+                  <div class="gauge-arc-fill" id="gauge-fill-2" style="width: 31.0%;"></div>
+                </div>
+                <div class="flex-between gauge-labels">
+                  <span class="text-xs">0% (Wilting)</span>
+                  <span class="text-xs font-bold" id="gauge-val-2">31.0%</span>
+                  <span class="text-xs">100% (Field Cap)</span>
+                </div>
+              </div>
+
+              <div class="zone-sensor-pills">
+                <div class="sensor-pill">
+                  <span class="pill-icon">🌡️</span>
+                  <div>
+                    <span class="pill-label">Soil Temp</span>
+                    <strong class="pill-val" id="zone-temp-2">26.8 °C</strong>
+                  </div>
+                </div>
+                <div class="sensor-pill watering" id="flow-pill-2">
+                  <span class="pill-icon">💧</span>
+                  <div>
+                    <span class="pill-label">Drip Flow</span>
+                    <strong class="pill-val" id="zone-flow-2">6.20 L/m</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="zone-threshold-box margin-top">
+              <div class="flex-between">
+                <label class="threshold-label" for="thresh-slider-2">Auto-Irrigation Trigger:</label>
+                <span class="threshold-num"><strong id="thresh-val-2">35</strong>%</span>
+              </div>
+              <input type="range" class="zone-thresh-slider" id="thresh-slider-2" data-zone="2" min="20" max="60" value="35">
+              <span class="threshold-hint text-xs text-muted">Valve activates if moisture drops below threshold.</span>
+            </div>
+
+            <div class="zone-action-row margin-top">
+              <button class="btn valve-toggle-btn active" id="valve-btn-2" data-zone="2">
+                <span class="valve-status-light active"></span>
+                <span class="valve-btn-text">VALVE ON (DRIPPING)</span>
+              </button>
+            </div>
+
+            <div class="zone-footer flex-between margin-top-sm">
+              <span class="text-xs text-muted">Dispensed today: <strong id="zone-water-2">820.5 L</strong></span>
+              <span class="text-xs text-muted">Last run: <span id="zone-last-2">Active</span></span>
+            </div>
           </div>
 
-          <div class="glass-panel card-padding zone-card">
-            <div class="zone-header">
-              <h3 data-i18n="zone3Title">Zone 3: Greenhouse Tomatoes</h3>
-              <span class="badge badge-success">Moisture 54%</span>
+          <!-- Zone 3 -->
+          <div class="glass-panel card-padding zone-card" id="zone-card-3" data-zone="3">
+            <div class="zone-card-header flex-between">
+              <div>
+                <span class="zone-badge">ZONE 3</span>
+                <h3 class="zone-title" data-i18n="zone3Title">Zone 3: Greenhouse Tomatoes</h3>
+                <span class="zone-subtitle">Hybrid Red Tomatoes • Hydroponic</span>
+              </div>
+              <span class="badge badge-success zone-moisture-badge" id="zone-badge-3">54.2% Moisture</span>
             </div>
-            <p>Soil Type: Hydroponic Medium | Drip Rate: 2 L/hr</p>
-            <button class="btn valve-toggle margin-top" data-zone="3" style="background-color: var(--grey-400);" data-i18n="valveOffBtn">VALVE OFF</button>
+
+            <div class="zone-metrics-row margin-top">
+              <div class="moisture-gauge-wrapper">
+                <div class="gauge-arc-track">
+                  <div class="gauge-arc-fill" id="gauge-fill-3" style="width: 54.2%;"></div>
+                </div>
+                <div class="flex-between gauge-labels">
+                  <span class="text-xs">0% (Wilting)</span>
+                  <span class="text-xs font-bold" id="gauge-val-3">54.2%</span>
+                  <span class="text-xs">100% (Field Cap)</span>
+                </div>
+              </div>
+
+              <div class="zone-sensor-pills">
+                <div class="sensor-pill">
+                  <span class="pill-icon">🌡️</span>
+                  <div>
+                    <span class="pill-label">Soil Temp</span>
+                    <strong class="pill-val" id="zone-temp-3">23.5 °C</strong>
+                  </div>
+                </div>
+                <div class="sensor-pill" id="flow-pill-3">
+                  <span class="pill-icon">💧</span>
+                  <div>
+                    <span class="pill-label">Drip Flow</span>
+                    <strong class="pill-val" id="zone-flow-3">0.00 L/m</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="zone-threshold-box margin-top">
+              <div class="flex-between">
+                <label class="threshold-label" for="thresh-slider-3">Auto-Irrigation Trigger:</label>
+                <span class="threshold-num"><strong id="thresh-val-3">45</strong>%</span>
+              </div>
+              <input type="range" class="zone-thresh-slider" id="thresh-slider-3" data-zone="3" min="20" max="60" value="45">
+              <span class="threshold-hint text-xs text-muted">Valve activates if moisture drops below threshold.</span>
+            </div>
+
+            <div class="zone-action-row margin-top">
+              <button class="btn valve-toggle-btn" id="valve-btn-3" data-zone="3">
+                <span class="valve-status-light"></span>
+                <span class="valve-btn-text">VALVE OFF (CLOSED)</span>
+              </button>
+            </div>
+
+            <div class="zone-footer flex-between margin-top-sm">
+              <span class="text-xs text-muted">Dispensed today: <strong id="zone-water-3">220.0 L</strong></span>
+              <span class="text-xs text-muted">Last run: <span id="zone-last-3">21:00 UTC</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Virtual ESP32 Hardware Simulator Drawer -->
+        <div class="glass-panel card-padding margin-top iot-simulator-panel" id="iot-simulator-panel" style="display:none;">
+          <div class="flex-between flex-wrap gap-sm">
+            <div>
+              <div class="flex-align-center gap-xs">
+                <span class="badge badge-accent">Interactive Virtual Hardware</span>
+                <h3 style="margin:0;">ESP32 Node Sensor & Relay Telemetry Simulator</h3>
+              </div>
+              <p class="text-xs text-muted margin-top-xs">Simulate live field sensor transmissions, trigger moisture deficit events, and test valve automation live without physical breadboards.</p>
+            </div>
+            <div class="flex-align-center gap-xs">
+              <button class="btn btn-sm btn-primary" id="btn-sim-stream-toggle">
+                <span id="sim-stream-icon">▶</span> <span id="sim-stream-text">Start Telemetry Ticks (3s)</span>
+              </button>
+              <button class="btn btn-sm btn-tertiary" id="btn-close-simulator">✕ Close</button>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="simulator-presets-row margin-top">
+            <span class="text-xs font-bold">Quick Field Scenarios:</span>
+            <button class="btn btn-xs btn-outline" id="preset-drought">🔥 Severe Soil Drought (&lt;25%)</button>
+            <button class="btn btn-xs btn-outline" id="preset-balanced">🌿 Optimal Balanced (45%)</button>
+            <button class="btn btn-xs btn-outline" id="preset-rain">🌧️ Saturated Post-Rain (&gt;65%)</button>
+          </div>
+
+          <!-- Live Simulator Sliders -->
+          <div class="sim-sliders-grid margin-top">
+            <div class="sim-slider-card">
+              <div class="flex-between">
+                <span class="text-xs font-bold">Zone 1 Moisture Sensor (A0)</span>
+                <strong class="text-xs" id="sim-label-1">48.5%</strong>
+              </div>
+              <input type="range" class="sim-range" id="sim-slider-1" data-zone="1" min="10" max="90" value="48.5" step="0.5">
+            </div>
+            <div class="sim-slider-card">
+              <div class="flex-between">
+                <span class="text-xs font-bold">Zone 2 Moisture Sensor (A1)</span>
+                <strong class="text-xs" id="sim-label-2">31.0%</strong>
+              </div>
+              <input type="range" class="sim-range" id="sim-slider-2" data-zone="2" min="10" max="90" value="31.0" step="0.5">
+            </div>
+            <div class="sim-slider-card">
+              <div class="flex-between">
+                <span class="text-xs font-bold">Zone 3 Moisture Sensor (A2)</span>
+                <strong class="text-xs" id="sim-label-3">54.2%</strong>
+              </div>
+              <input type="range" class="sim-range" id="sim-slider-3" data-zone="3" min="10" max="90" value="54.2" step="0.5">
+            </div>
+          </div>
+
+          <!-- Simulator Console Output -->
+          <div class="sim-console-wrapper margin-top">
+            <div class="flex-between sim-console-header">
+              <span class="text-xs chip-mono">ESP32 REST / MQTT Output Stream</span>
+              <span class="text-xs text-muted" id="sim-status-ping">Status: Standing by</span>
+            </div>
+            <pre class="sim-console-code" id="sim-console-log">{"nodeId":"ESP32-AGRO-01","firmware":"2.4.0","status":"online","ready":true}</pre>
           </div>
         </div>
       </section>
