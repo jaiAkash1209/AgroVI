@@ -530,7 +530,7 @@ body.public-page-body, body.auth-page-body, body.dashboard-page-body {
   }
 }
 
-/* Page-Level Background Video System (Multi-Page Unique Videos) */
+/* Page-Level Background Video System (Index Hero & Auth Golden Wheat) */
 .page-video-bg-container {
   position: fixed;
   top: 0;
@@ -538,13 +538,24 @@ body.public-page-body, body.auth-page-body, body.dashboard-page-body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
 }
 
-body.dashboard-page-body {
+body.auth-page-body {
   background: transparent !important;
   min-height: 100vh;
+}
+
+body.dashboard-page-body {
+  background: #7d8c83 url('farm-bg.jpg') center center / cover fixed no-repeat !important;
+  background-blend-mode: multiply;
+  min-height: 100vh;
+}
+
+:root[data-theme="dark"] body.dashboard-page-body {
+  background: #0d1712 url('farm-bg.jpg') center center / cover fixed no-repeat !important;
+  background-blend-mode: multiply;
 }
 
 /* Ensure all page content containers stack strictly ABOVE background videos & scrims */

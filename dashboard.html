@@ -34,21 +34,6 @@
 </head>
 <body class="dashboard-page-body">
 
-  <!-- Atmospheric Irrigation & Water Telemetry Background Video -->
-  <div class="page-video-bg-container dashboard-video-container">
-    <video class="page-bg-video" id="dashboard-bg-video" autoplay muted loop playsinline poster="farm-bg.jpg">
-      <source src="videos/irrigation-water-bg.webm" type="video/webm">
-      <source src="videos/irrigation-water-bg.mp4" type="video/mp4">
-    </video>
-    <div class="page-video-overlay dashboard-video-overlay"></div>
-  </div>
-
-  <!-- Floating Video Control Button -->
-  <button id="dashboard-video-toggle" class="floating-video-ctrl-btn" aria-label="Pause telemetry video" title="Pause or Play Irrigation Telemetry Video">
-    <span class="video-ctrl-icon" id="dashboard-video-ctrl-icon">⏸</span>
-    <span class="video-ctrl-label" id="dashboard-video-ctrl-label">Irrigation Stream</span>
-  </button>
-
   <!-- Top Bar -->
   <div class="top-bar">
     <div class="top-bar-inner container-fluid">
@@ -873,28 +858,6 @@
           VoiceAssistant.setLanguage(lang);
         });
       });
-
-      // Atmospheric Irrigation & Water Video Controller
-      const dashBgVideo = document.getElementById('dashboard-bg-video');
-      const dashVideoToggle = document.getElementById('dashboard-video-toggle');
-      const dashVideoIcon = document.getElementById('dashboard-video-ctrl-icon');
-      const dashVideoLabel = document.getElementById('dashboard-video-ctrl-label');
-
-      if (dashBgVideo && dashVideoToggle) {
-        dashVideoToggle.addEventListener('click', () => {
-          if (dashBgVideo.paused) {
-            dashBgVideo.play();
-            if (dashVideoIcon) dashVideoIcon.textContent = '⏸';
-            if (dashVideoLabel) dashVideoLabel.textContent = 'Irrigation Stream';
-            dashVideoToggle.setAttribute('aria-label', 'Pause telemetry video');
-          } else {
-            dashBgVideo.pause();
-            if (dashVideoIcon) dashVideoIcon.textContent = '▶';
-            if (dashVideoLabel) dashVideoLabel.textContent = 'Paused';
-            dashVideoToggle.setAttribute('aria-label', 'Play telemetry video');
-          }
-        });
-      }
     });
   </script>
 </body>
