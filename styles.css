@@ -514,12 +514,104 @@ body.public-page-body, body.auth-page-body, body.dashboard-page-body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-bg-video {
-    display: none;
+  .hero-bg-video,
+  .page-bg-video {
+    display: none !important;
   }
-  .hero-video-ctrl-btn {
-    display: none;
+  .hero-video-ctrl-btn,
+  .floating-video-ctrl-btn {
+    display: none !important;
   }
+}
+
+/* Page-Level Background Video System (Multi-Page Unique Videos) */
+.page-video-bg-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page-bg-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.90;
+  transition: opacity 0.5s ease;
+}
+
+.page-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Auth Page Video Scrim: Golden Wheat with High-Contrast Focus */
+.auth-video-overlay {
+  background: radial-gradient(circle at center, rgba(12, 28, 16, 0.62) 0%, rgba(6, 16, 9, 0.88) 100%);
+}
+
+:root[data-theme="dark"] .auth-video-overlay {
+  background: radial-gradient(circle at center, rgba(8, 14, 20, 0.78) 0%, rgba(4, 7, 12, 0.94) 100%);
+}
+
+/* Dashboard Video Scrim: Ambient Drip Irrigation & Water Telemetry Scrim */
+.dashboard-video-overlay {
+  background: linear-gradient(180deg, rgba(244, 247, 244, 0.86) 0%, rgba(238, 243, 239, 0.92) 100%);
+}
+
+:root[data-theme="dark"] .dashboard-video-overlay {
+  background: linear-gradient(180deg, rgba(8, 14, 10, 0.86) 0%, rgba(11, 18, 14, 0.93) 100%);
+}
+
+/* Floating Interactive Video Playback Control (Global Multi-Page) */
+.floating-video-ctrl-btn {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 999;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(10, 26, 14, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.38);
+  min-height: auto !important;
+}
+
+.floating-video-ctrl-btn:hover {
+  background: rgba(22, 58, 28, 0.95);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+}
+
+.floating-video-ctrl-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 
 /* Modern Pill Badge */
@@ -731,20 +823,27 @@ body.public-page-body, body.auth-page-body, body.dashboard-page-body {
   box-shadow: var(--shadow-elevated);
 }
 
-/* Minimalist Clean Auth Architecture (Reference Layout) */
+/* Minimalist Clean Auth Architecture with Glassmorphic Depth Over Background Video */
 .auth-clean-card {
   max-width: 440px;
   margin: 28px auto 48px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  background: rgba(243, 244, 246, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
   padding: 44px 38px 36px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  position: relative;
+  z-index: 2;
 }
 
 :root[data-theme="dark"] .auth-clean-card {
-  background: #181c24;
-  border-color: #2b3240;
+  background: rgba(24, 28, 36, 0.90);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
 }
 
 .auth-clean-title {

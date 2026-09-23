@@ -324,6 +324,66 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
             })
             return
 
+        # Video streaming with HTTP 206 Partial Content (Range Header Support)
+        if parsed.path.startswith("/videos/") or parsed.path.endswith((".mp4", ".webm", ".mov")):
+            rel_path = parsed.path.lstrip("/")
+            file_path = os.path.join(BASE_DIR, rel_path)
+            if os.path.isfile(file_path):
+                file_size = os.path.getsize(file_path)
+                mime = "video/webm" if file_path.endswith(".webm") else "video/mp4"
+                range_header = self.headers.get("Range")
+
+                if range_header and range_header.startswith("bytes="):
+                    try:
+                        range_spec = range_header.replace("bytes=", "").split("-")
+                        start = int(range_spec[0]) if range_spec[0] else 0
+                        end = int(range_spec[1]) if len(range_spec) > 1 and range_spec[1] else file_size - 1
+                        end = min(end, file_size - 1)
+                        length = end - start + 1
+
+                        self.send_response(206)
+                        self.send_header("Content-Type", mime)
+                        self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
+                        self.send_header("Content-Length", str(length))
+                        self.send_header("Accept-Ranges", "bytes")
+                        self.send_header("Cache-Control", "public, max-age=86400")
+                        self.end_headers()
+
+                        with open(file_path, "rb") as f:
+                            f.seek(start)
+                            chunk_size = 64 * 1024
+                            remaining = length
+                            while remaining > 0:
+                                chunk = f.read(min(chunk_size, remaining))
+                                if not chunk:
+                                    break
+                                self.wfile.write(chunk)
+                                remaining -= len(chunk)
+                        return
+                    except (ConnectionResetError, BrokenPipeError):
+                        return
+                    except Exception as e:
+                        print(f"[VIDEO STREAM ERROR] {e}")
+
+                # Standard full delivery with Accept-Ranges
+                self.send_response(200)
+                self.send_header("Content-Type", mime)
+                self.send_header("Content-Length", str(file_size))
+                self.send_header("Accept-Ranges", "bytes")
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                with open(file_path, "rb") as f:
+                    chunk_size = 64 * 1024
+                    while True:
+                        chunk = f.read(chunk_size)
+                        if not chunk:
+                            break
+                        try:
+                            self.wfile.write(chunk)
+                        except (ConnectionResetError, BrokenPipeError):
+                            break
+                return
+
         # Default static file serving
         return super().do_GET()
 

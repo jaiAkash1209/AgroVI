@@ -25,6 +25,21 @@
 </head>
 <body class="auth-page-body">
 
+  <!-- Atmospheric Golden Wheat Field Background Video -->
+  <div class="page-video-bg-container">
+    <video class="page-bg-video" id="auth-bg-video" autoplay muted loop playsinline poster="farm-bg.jpg">
+      <source src="videos/wheat-field-bg.webm" type="video/webm">
+      <source src="videos/wheat-field-bg.mp4" type="video/mp4">
+    </video>
+    <div class="page-video-overlay auth-video-overlay"></div>
+  </div>
+
+  <!-- Floating Video Control Button -->
+  <button id="auth-video-toggle" class="floating-video-ctrl-btn" aria-label="Pause background video" title="Pause or Play Golden Wheat Field Video">
+    <span class="video-ctrl-icon" id="video-ctrl-icon">⏸</span>
+    <span class="video-ctrl-label" id="video-ctrl-label">Wheat Field</span>
+  </button>
+
   <!-- Top Utility Bar -->
   <div class="top-bar">
     <div class="top-bar-inner container">
@@ -314,6 +329,28 @@
       initTheme();
       initLanguage();
       Auth.init();
+
+      // Atmospheric Wheat Field Video Controller
+      const bgVideo = document.getElementById('auth-bg-video');
+      const videoToggleBtn = document.getElementById('auth-video-toggle');
+      const videoCtrlIcon = document.getElementById('video-ctrl-icon');
+      const videoCtrlLabel = document.getElementById('video-ctrl-label');
+
+      if (bgVideo && videoToggleBtn) {
+        videoToggleBtn.addEventListener('click', () => {
+          if (bgVideo.paused) {
+            bgVideo.play();
+            if (videoCtrlIcon) videoCtrlIcon.textContent = '⏸';
+            if (videoCtrlLabel) videoCtrlLabel.textContent = 'Wheat Field';
+            videoToggleBtn.setAttribute('aria-label', 'Pause background video');
+          } else {
+            bgVideo.pause();
+            if (videoCtrlIcon) videoCtrlIcon.textContent = '▶';
+            if (videoCtrlLabel) videoCtrlLabel.textContent = 'Paused';
+            videoToggleBtn.setAttribute('aria-label', 'Play background video');
+          }
+        });
+      }
     });
   </script>
 </body>
