@@ -41,6 +41,84 @@ export const APMCCommodityRates = {
   }
 };
 
+/**
+ * Calculate Vapor Pressure Deficit (VPD in kPa)
+ */
+export function calculateVPD(tempC = 28, humidity = 58) {
+  const es = 0.61078 * Math.exp((17.27 * tempC) / (tempC + 237.3));
+  const ea = es * (humidity / 100);
+  return parseFloat(Math.max(0, es - ea).toFixed(2));
+}
+
+/**
+ * Evaluate Nocturnal Radiation Frost Risk
+ */
+export function evaluateFrostRisk(tempC = 28, humidity = 58) {
+  const a = 17.27;
+  const b = 237.7;
+  const alpha = ((a * tempC) / (b + tempC)) + Math.log(humidity / 100);
+  const dewPoint = (b * alpha) / (a - alpha);
+  const isFrostRisk = tempC <= 4.0 && dewPoint <= 0.0;
+  return { dewPoint: parseFloat(dewPoint.toFixed(1)), isFrostRisk };
+}
+
+/**
+ * Calculate Fertilizer Stoichiometry (Urea, DAP, MOP) per plot acreage
+ */
+export function calculateFertilizerRequirements(targetN = 120, targetP = 60, targetK = 40, acres = 5) {
+  const dapKgPerAcre = targetP / 0.46;
+  const nSuppliedByDap = dapKgPerAcre * 0.18;
+  const netNNeeded = Math.max(0, targetN - nSuppliedByDap);
+  const ureaKgPerAcre = netNNeeded / 0.46;
+  const mopKgPerAcre = targetK / 0.60;
+
+  return {
+    ureaKg: Math.round(ureaKgPerAcre * acres),
+    dapKg: Math.round(dapKgPerAcre * acres),
+    mopKg: Math.round(mopKgPerAcre * acres),
+    totalFertilizerKg: Math.round((ureaKgPerAcre + dapKgPerAcre + mopKgPerAcre) * acres)
+  };
+}
+
+/**
+ * Calculate Soil pH Buffering Amendment (Agricultural Lime vs Gypsum)
+ */
+export function calculateSoilAmendment(ph = 6.8, acres = 5) {
+  if (ph < 6.0) {
+    const limeKgPerAcre = Math.round((6.5 - ph) * 800);
+    return { type: 'Agricultural Lime (CaCO3)', kg: limeKgPerAcre * acres, action: 'Neutralize acidity and bring pH to optimal 6.5' };
+  } else if (ph > 7.8) {
+    const gypsumKgPerAcre = Math.round((ph - 7.5) * 600);
+    return { type: 'Agricultural Gypsum (CaSO4)', kg: gypsumKgPerAcre * acres, action: 'Neutralize high sodium alkalinity and lower pH' };
+  }
+  return { type: 'Balanced Soil', kg: 0, action: 'Soil pH is in optimal agronomic range (6.2–7.5).' };
+}
+
+/**
+ * Analyze APMC Commodity Trajectory with Weighted Moving Average (WMA)
+ */
+export function analyzeCommodityTrend(history = []) {
+  if (!history || history.length < 3) return { recommendation: 'HOLD', confidence: 75, wma: 0 };
+  const weights = [1, 2, 3, 4, 5, 6].slice(0, history.length);
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  const weightedSum = history.reduce((sum, rate, idx) => sum + rate * weights[idx], 0);
+  const wma = Math.round(weightedSum / totalWeight);
+  const latest = history[history.length - 1];
+  const delta = latest - wma;
+
+  let recommendation = 'HOLD (Steady Market)';
+  let badgeClass = 'badge-warning';
+  if (delta > 30) {
+    recommendation = 'STRONG SELL (Peak Rates)';
+    badgeClass = 'badge-success';
+  } else if (delta < -30) {
+    recommendation = 'STRONG BUY / STORE (Dip Detected)';
+    badgeClass = 'badge-primary';
+  }
+
+  return { wma, latest, delta, recommendation, badgeClass };
+}
+
 export const Dashboard = {
   init() {
     initLanguage();
@@ -54,6 +132,25 @@ export const Dashboard = {
     this.renderActivePlotUI();
     this.renderChartsAndGauges();
     this.loadUserSession();
+
+    // Inactivity timeout guard (30 min)
+    Security.initInactivityGuard(
+      30,
+      () => showToast('Session warning: Inactivity detected. Auto-logout in 2 minutes.'),
+      () => {
+        showToast('Session expired due to inactivity.');
+        sessionStorage.clear();
+        Security.broadcastLogout();
+        window.location.replace('login.html?session_expired=true');
+      }
+    );
+
+    // Multi-tab logout synchronization
+    Security.initMultiTabSync(() => {
+      showToast('Logged out from another tab.');
+      sessionStorage.clear();
+      window.location.replace('login.html');
+    });
 
     // Subscribe to state updates
     Store.on('activePlot', () => {

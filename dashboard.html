@@ -91,12 +91,19 @@
       </div>
 
       <div class="user-status-bar flex-align">
+        <!-- Security & Intelligence Status Badge -->
+        <div class="sec-intel-badge flex-align" id="sec-intel-badge" title="Cryptographic HMAC Authentication & FAO-56 Intelligence Engine Online">
+          <span class="sec-intel-shield-icon">🛡️</span>
+          <span class="sec-intel-label">SECURE AI</span>
+          <span class="sec-pulse-dot"></span>
+        </div>
+
         <select id="plot-switcher" class="form-input plot-switcher-select" style="width: auto; padding: 4px 10px; font-weight: 700; font-size: 11px;">
           <option value="northField">North Field — Wheat (15 Acres)</option>
           <option value="southOrchard">South Orchard — Pomegranate (8 Acres)</option>
           <option value="greenhouseB">Greenhouse B — Tomato (3 Acres)</option>
         </select>
-        <button class="btn btn-tertiary voice-mic-btn" id="btn-voice-mic" title="Click to speak voice commands (EN / HI / TA)" data-i18n="voiceAgent">Voice Agent</button>
+        <button class="btn btn-tertiary voice-mic-btn" id="btn-voice-mic" title="Click to speak voice commands (EN / HI / TA / ML)" data-i18n="voiceAgent">Voice Agent</button>
         
         <!-- Profile Avatar Circle & Dropdown (Pinterest style) -->
         <div class="profile-menu-container" id="profile-menu-container">
@@ -412,6 +419,14 @@
             <div class="metric-value-row">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--color-primary);"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
               <strong id="system-water-today">1,420.5 L</strong>
+            </div>
+          </div>
+          <div class="iot-summary-divider"></div>
+          <div class="iot-summary-metric">
+            <span class="metric-label">Penman-Monteith ET₀</span>
+            <div class="metric-value-row">
+              <strong id="system-et0-rate" style="color:var(--color-primary);">5.2 mm/day</strong>
+              <span class="metric-sub" id="system-cwsi-val">CWSI 0.18</span>
             </div>
           </div>
           <div class="iot-summary-divider"></div>

@@ -14,6 +14,8 @@ import random
 import socket
 import threading
 import hashlib
+import hmac
+import secrets
 import urllib.request
 import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -23,6 +25,125 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DB_FILE = os.path.join(DATA_DIR, "database.json")
 TELEMETRY_FILE = os.path.join(DATA_DIR, "telemetry.json")
+
+# ----------------------------------------------------
+# ENTERPRISE SECURITY & CRYPTOGRAPHY ENGINE
+# ----------------------------------------------------
+SERVER_START_TIME = time.time()
+HMAC_SECRET = os.environ.get("AGROVI_SECRET_KEY", "agrovi_hmac_secret_key_2026_super_safe").encode("utf-8")
+DEVICE_KEY = os.environ.get("AGROVI_DEVICE_KEY", "agrovi_hw_node_esp32_secret_2026")
+
+RATE_LIMIT_STORE = {}        # {ip: [timestamps]}
+ACCOUNT_LOCKOUT_STORE = {}   # {account: {"failures": int, "locked_until": float}}
+OTP_COOLDOWN_STORE = {}      # {email: float}
+SECURITY_AUDIT_LOGS = []     # [{timestamp, event, ip, details}]
+VALVE_RUN_TRACKER = {}       # {zone_id: {"opened_at": float}}
+
+def log_security_event(event_type, ip, details):
+    entry = {
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+        "event": event_type,
+        "ip": str(ip),
+        "details": details
+    }
+    SECURITY_AUDIT_LOGS.append(entry)
+    if len(SECURITY_AUDIT_LOGS) > 100:
+        SECURITY_AUDIT_LOGS.pop(0)
+    print(f"[SECURITY AUDIT] [{entry['timestamp']}] {event_type} | IP: {ip} | {details}")
+
+def check_ip_rate_limit(ip, max_requests=25, window_seconds=60):
+    now = time.time()
+    times = RATE_LIMIT_STORE.get(ip, [])
+    times = [t for t in times if now - t < window_seconds]
+    if len(times) >= max_requests:
+        RATE_LIMIT_STORE[ip] = times
+        return False
+    times.append(now)
+    RATE_LIMIT_STORE[ip] = times
+    return True
+
+def check_account_lockout(account_id):
+    now = time.time()
+    record = ACCOUNT_LOCKOUT_STORE.get(account_id)
+    if not record:
+        return False, 0
+    if record.get("locked_until", 0) > now:
+        remaining = int(record["locked_until"] - now)
+        return True, remaining
+    return False, 0
+
+def record_login_attempt(account_id, success, ip):
+    now = time.time()
+    if success:
+        ACCOUNT_LOCKOUT_STORE.pop(account_id, None)
+        log_security_event("LOGIN_SUCCESS", ip, f"Account: {account_id}")
+    else:
+        record = ACCOUNT_LOCKOUT_STORE.setdefault(account_id, {"failures": 0, "locked_until": 0})
+        record["failures"] += 1
+        log_security_event("LOGIN_FAILURE", ip, f"Account: {account_id} (Attempt {record['failures']})")
+        if record["failures"] >= 5:
+            record["locked_until"] = now + 300  # 5 minutes lockout
+            log_security_event("ACCOUNT_LOCKED", ip, f"Account {account_id} locked for 5 minutes")
+
+def generate_session_token(user_id, role="Certified Farmer"):
+    ts = int(time.time())
+    nonce = secrets.token_hex(8)
+    msg = f"{user_id}:{role}:{ts}:{nonce}"
+    sig = hmac.new(HMAC_SECRET, msg.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"AGRO_{msg}:{sig}"
+
+def verify_session_token(token):
+    if not token or not token.startswith("AGRO_"):
+        return False, "Invalid token prefix"
+    try:
+        raw = token[5:]
+        parts = raw.split(":")
+        if len(parts) != 5:
+            return False, "Malformed token structure"
+        user_id, role, ts, nonce, sig = parts
+        expected_msg = f"{user_id}:{role}:{ts}:{nonce}"
+        expected_sig = hmac.new(HMAC_SECRET, expected_msg.encode("utf-8"), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected_sig):
+            return False, "Invalid cryptographic token signature"
+        if time.time() - int(ts) > 86400:
+            return False, "Session token has expired (24h limit)"
+        return True, {"user_id": user_id, "role": role, "timestamp": int(ts)}
+    except Exception as e:
+        return False, str(e)
+
+def sanitize_json_payload(data):
+    if isinstance(data, dict):
+        return {k: sanitize_json_payload(v) for k, v in data.items() if not str(k).startswith("$")}
+    elif isinstance(data, list):
+        return [sanitize_json_payload(item) for item in data]
+    elif isinstance(data, str):
+        val = data.replace("<script", "&lt;script").replace("</script>", "&lt;/script&gt;")
+        val = val.replace("javascript:", "").replace("../", "")
+        return val.strip()
+    return data
+
+def get_db_checksum():
+    try:
+        if os.path.exists(DB_FILE):
+            with open(DB_FILE, "rb") as f:
+                return hashlib.sha256(f.read()).hexdigest()
+    except Exception:
+        pass
+    return ""
+
+def check_valve_safety_cutoff(zones):
+    now = time.time()
+    for zid, z in zones.items():
+        if z.get("valveOpen"):
+            if zid not in VALVE_RUN_TRACKER:
+                VALVE_RUN_TRACKER[zid] = {"opened_at": now}
+            elif now - VALVE_RUN_TRACKER[zid]["opened_at"] > 2700:  # 45 minutes max run safety
+                z["valveOpen"] = False
+                VALVE_RUN_TRACKER.pop(zid, None)
+                log_security_event("VALVE_SAFETY_CUTOFF", "SYSTEM", f"Zone {zid} exceeded 45 min runtime - auto shutoff!")
+        else:
+            VALVE_RUN_TRACKER.pop(zid, None)
+
 
 
 # Ensure database directory and file exist
@@ -226,13 +347,30 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
         # Disable reverse DNS lookup on Windows to prevent 2-second timeout lag
         return str(self.client_address[0])
 
+    def end_headers(self):
+        # Strict Enterprise Security & Defense Headers
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("X-XSS-Protection", "1; mode=block")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        csp = (
+            "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com "
+            "https://upload.wikimedia.org https://commons.wikimedia.org https://script.google.com https://script.googleusercontent.com data: blob:; "
+            "img-src 'self' data: blob: https://upload.wikimedia.org https://commons.wikimedia.org; "
+            "media-src 'self' blob: https://upload.wikimedia.org https://commons.wikimedia.org; "
+            "connect-src 'self' https://script.google.com https://script.googleusercontent.com;"
+        )
+        self.send_header("Content-Security-Policy", csp)
+        super().end_headers()
+
     def _send_json(self, data, status=200):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-AgroVI-Device-Key")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.end_headers()
         self.wfile.write(body)
@@ -240,12 +378,41 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-AgroVI-Device-Key")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.end_headers()
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+
+        # API: Real-time Security & Intelligence Audit Desk
+        if parsed.path == "/api/security/audit":
+            now = time.time()
+            active_locks = {
+                k: int(v["locked_until"] - now)
+                for k, v in ACCOUNT_LOCKOUT_STORE.items()
+                if v.get("locked_until", 0) > now
+            }
+            self._send_json({
+                "success": True,
+                "status": "SECURE",
+                "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                "uptimeSeconds": int(now - SERVER_START_TIME),
+                "dbIntegritySha256": get_db_checksum(),
+                "activeLocksCount": len(active_locks),
+                "activeLocks": active_locks,
+                "recentIncidents": SECURITY_AUDIT_LOGS[-15:],
+                "securityPolicy": {
+                    "cspEnforced": True,
+                    "hstsEnforced": True,
+                    "xFrameOptions": "DENY",
+                    "nosniff": True,
+                    "maxPayloadBytes": 2097152,
+                    "sessionTtlSeconds": 86400,
+                    "valveSafetyCutoffSeconds": 2700
+                }
+            })
+            return
         
         # API: Get registered users (safe summary)
         if parsed.path == "/api/users":
@@ -390,25 +557,45 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
 
-        # Read JSON body
+        # Read JSON body with 2MB DoS payload guard
         content_len = int(self.headers.get("Content-Length", 0))
+        if content_len > 2 * 1024 * 1024:
+            self._send_json({"success": False, "message": "Request payload exceeds 2MB limit."}, 413)
+            return
+
         post_body = self.rfile.read(content_len) if content_len > 0 else b"{}"
         try:
             payload = json.loads(post_body.decode("utf-8"))
+            payload = sanitize_json_payload(payload)
         except Exception:
             self._send_json({"success": False, "message": "Invalid JSON format in request"}, 400)
             return
+
+        client_ip = self.address_string()
 
         # ----------------------------------------------------
         # API: LOGIN (/api/login)
         # ----------------------------------------------------
         if parsed.path == "/api/login":
+            # Rate-limiting check: max 20 login attempts / 60 seconds per IP
+            if not check_ip_rate_limit(client_ip, max_requests=20, window_seconds=60):
+                log_security_event("RATE_LIMIT_EXCEEDED", client_ip, "Login rate limit exceeded on /api/login")
+                self._send_json({"success": False, "message": "Too many requests. Please wait 1 minute before retrying."}, 429)
+                return
+
             login_id = str(payload.get("username", "")).strip().lower()
             raw_password = str(payload.get("password", "")).strip()
             incoming_hash = str(payload.get("passwordHash", "")).strip() or hash_password(raw_password)
 
             if not login_id or (not raw_password and not incoming_hash):
                 self._send_json({"success": False, "message": "Please enter both username and password."}, 400)
+                return
+
+            # Account Lockout Check: 5 failed attempts locks for 5 minutes
+            is_locked, remaining = check_account_lockout(login_id)
+            if is_locked:
+                log_security_event("LOCKED_LOGIN_ATTEMPT", client_ip, f"Attempt on locked account '{login_id}'")
+                self._send_json({"success": False, "message": f"Account temporarily locked due to failed attempts. Try again in {remaining} seconds."}, 423)
                 return
 
             db = load_db()
@@ -432,6 +619,8 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
             if not found_user:
                 sheet_user = check_google_sheet_login(login_id, raw_password, incoming_hash)
                 if sheet_user:
+                    record_login_attempt(login_id, True, client_ip)
+                    token = generate_session_token(sheet_user.get("id", "USR-1001"), sheet_user.get("role", "Certified Farmer"))
                     user_session = {
                         "id": sheet_user.get("id"),
                         "username": sheet_user.get("username"),
@@ -440,7 +629,7 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                         "phone": sheet_user.get("phone"),
                         "farmSize": sheet_user.get("farmSize", 20),
                         "role": sheet_user.get("role", "Certified Farmer"),
-                        "token": f"AGRO_{sheet_user.get('id', '1001')}_{os.urandom(4).hex()}"
+                        "token": token
                     }
                     print(f"[AUTH] Farmer '{user_session['fullname']}' logged in via Google Sheets.")
                     self._send_json({
@@ -450,6 +639,7 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                     })
                     return
 
+                record_login_attempt(login_id, False, client_ip)
                 self._send_json({
                     "success": False,
                     "message": f"No account found for '{login_id}'. Please check spelling or Sign Up."
@@ -472,6 +662,8 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                 save_db(db)
 
             if is_valid:
+                record_login_attempt(login_id, True, client_ip)
+                token = generate_session_token(found_user.get("id", "USR-1001"), found_user.get("role", "Certified Farmer"))
                 user_session = {
                     "id": found_user.get("id"),
                     "username": found_user.get("username"),
@@ -480,7 +672,7 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                     "phone": found_user.get("phone"),
                     "farmSize": found_user.get("farmSize", 20),
                     "role": found_user.get("role", "Certified Farmer"),
-                    "token": f"AGRO_{found_user.get('id', '1001')}_{os.urandom(4).hex()}"
+                    "token": token
                 }
                 print(f"[AUTH] Farmer '{user_session['fullname']}' logged in successfully.")
                 self._send_json({
@@ -490,6 +682,7 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
                 })
                 return
             else:
+                record_login_attempt(login_id, False, client_ip)
                 self._send_json({
                     "success": False,
                     "message": "Incorrect password. Please verify your password."
@@ -719,6 +912,20 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
             if not email or "@" not in email:
                 self._send_json({"success": False, "message": "A valid email address is required."}, 400)
                 return
+
+            # Rate limit OTP requests per IP (max 10 / min)
+            if not check_ip_rate_limit(client_ip, max_requests=10, window_seconds=60):
+                log_security_event("OTP_RATE_LIMIT", client_ip, f"OTP request rate limit exceeded from {client_ip}")
+                self._send_json({"success": False, "message": "Too many verification requests. Please wait a minute."}, 429)
+                return
+
+            # 45-second cooldown per target email
+            last_req = OTP_COOLDOWN_STORE.get(email, 0)
+            if time.time() - last_req < 45:
+                wait_sec = int(45 - (time.time() - last_req))
+                self._send_json({"success": False, "message": f"Security cooldown active. Please wait {wait_sec}s before requesting a new code."}, 429)
+                return
+            OTP_COOLDOWN_STORE[email] = time.time()
 
             db = load_db()
             users = db.get("users", [])

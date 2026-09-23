@@ -14,6 +14,16 @@ let isSimulating = false;
 let isDraggingSlider = false;
 
 /**
+ * Crop Coefficient (Kc) Growth Stage Progression Matrix
+ * Standard FAO-56 Irrigation Paper 56
+ */
+export const CropKcCoefficients = {
+  wheat: { initial: 0.35, mid: 1.15, late: 0.40, currentStage: 'mid' },
+  pomegranate: { initial: 0.50, mid: 0.85, late: 0.65, currentStage: 'mid' },
+  tomato: { initial: 0.60, mid: 1.15, late: 0.80, currentStage: 'mid' }
+};
+
+/**
  * Calculate Penman-Monteith Reference Evapotranspiration (ET₀ in mm/day)
  * FAO-56 Irrigation and Drainage Paper 56 standard
  */
@@ -31,6 +41,27 @@ export function calculateET0(tempC = 28, humidity = 58, windSpeedKmH = 12, solar
 
   const et0 = Math.max(1.8, Math.min(9.5, num / den));
   return parseFloat(et0.toFixed(2));
+}
+
+/**
+ * Calculate Crop Water Stress Index (CWSI)
+ * CWSI ranges from 0.0 (non-stressed, optimal transpiration) to 1.0 (severe stress)
+ */
+export function calculateCWSI(canopyTemp = 25, airTemp = 28, lowerBaseline = -2.5, upperBaseline = 4.0) {
+  const diff = canopyTemp - airTemp;
+  const cwsi = (diff - lowerBaseline) / (upperBaseline - lowerBaseline);
+  return parseFloat(Math.max(0.0, Math.min(1.0, cwsi)).toFixed(2));
+}
+
+/**
+ * Calculate Estimated Hours Before Soil Drops Below Critical Irrigation Threshold
+ */
+export function calculateHoursToWilting(currentMoisture, threshold = 35.0, et0 = 5.2, kc = 1.05) {
+  if (currentMoisture <= threshold) return 0;
+  const dailyDepletionRate = (et0 * kc) * 0.45; // % soil moisture loss per 24 hours
+  const hourlyRate = dailyDepletionRate / 24;
+  const hours = (currentMoisture - threshold) / Math.max(0.05, hourlyRate);
+  return Math.round(hours);
 }
 
 /**

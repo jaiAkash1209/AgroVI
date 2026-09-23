@@ -33,6 +33,33 @@ export const PathologyDatabase = {
     chemicalRemedy: 'Control Whitefly vector using Imidacloprid 17.8% SL (0.5ml/L) or Thiamethoxam 25% WG (0.3g/L).',
     dosagePerAcre: '200 Liters of spray mixture per acre (100ml Imidacloprid total).'
   },
+  riceBlast: {
+    name: 'Rice Leaf Blast (Magnaporthe oryzae)',
+    pathogen: 'Ascomycota Fungi (Spindle Lesions with Grey Centers)',
+    defaultSeverity: 38,
+    confidence: 95.2,
+    organicRemedy: 'Foliar spray with Pseudomonas fluorescens bio-agent (10g/L) + Panchagavya 3% solution at 10-day intervals.',
+    chemicalRemedy: 'Tricyclazole 75% WP (0.6g/L water) or Isoprothiolane 40% EC (1.5ml/L water). Apply at first sign of spindle spots.',
+    dosagePerAcre: '200 Liters of spray mixture per acre (120g Tricyclazole total per application).'
+  },
+  wheatRust: {
+    name: 'Wheat Stripe / Brown Rust (Puccinia striiformis)',
+    pathogen: 'Basidiomycete Urediniospores (Yellow-Orange Pustules)',
+    defaultSeverity: 29,
+    confidence: 93.8,
+    organicRemedy: 'Cow urine extract with Fermented Buttermilk (5% solution) + Trichoderma harzianum (5g/L).',
+    chemicalRemedy: 'Propiconazole 25% EC (1.0ml/L water) or Tebuconazole 25.9% EC (1.0ml/L water). Ensure uniform canopy coverage.',
+    dosagePerAcre: '200 Liters of spray mixture per acre (200ml Propiconazole total).'
+  },
+  cottonLeafCurl: {
+    name: 'Cotton Leaf Curl Virus (CLCuV)',
+    pathogen: 'Begomovirus (Transmitted by Bemisia tabaci whiteflies)',
+    defaultSeverity: 42,
+    confidence: 91.5,
+    organicRemedy: 'Erect 12 yellow sticky traps per acre + Neem Seed Kernel Extract (NSKE 5%) + Castor border trapping.',
+    chemicalRemedy: 'Diafenthiuron 50% WP (1.0g/L water) or Spiromesifen 22.9% SC (1.0ml/L water) to suppress whitefly vectors.',
+    dosagePerAcre: '200 Liters of spray mixture per acre (200g Diafenthiuron total).'
+  },
   healthy: {
     name: 'Healthy Crop Canopy (Optimal Chlorophyll)',
     pathogen: 'None (Healthy Stomata & Cell Walls)',
@@ -43,6 +70,39 @@ export const PathologyDatabase = {
     dosagePerAcre: 'Standard drip irrigation and root-zone nutrient fertigation only.'
   }
 };
+
+/**
+ * Calculate dynamic treatment spray volume and chemical active ingredient scaled to plot size
+ * @param {string} pathologyKey
+ * @param {number} acres
+ * @returns {{waterLiters: number, chemicalKg: string, organicKg: string}}
+ */
+export function calculateDynamicDosage(pathologyKey, acres = 5) {
+  const baseWaterPerAcre = 200;
+  const totalWater = baseWaterPerAcre * acres;
+  let chemicalKg = (0.5 * acres).toFixed(2);
+  let organicKg = (1.5 * acres).toFixed(2);
+
+  if (pathologyKey === 'earlyBlight') {
+    chemicalKg = (0.625 * acres).toFixed(2) + ' kg Mancozeb';
+    organicKg = (1.25 * acres).toFixed(2) + ' kg Trichoderma viride';
+  } else if (pathologyKey === 'powderyMildew') {
+    chemicalKg = (0.60 * acres).toFixed(2) + ' kg Wettable Sulfur';
+    organicKg = (0.80 * acres).toFixed(2) + ' kg Potassium Bicarbonate';
+  } else if (pathologyKey === 'riceBlast') {
+    chemicalKg = (0.12 * acres).toFixed(2) + ' kg Tricyclazole';
+    organicKg = (2.00 * acres).toFixed(2) + ' kg Pseudomonas';
+  } else if (pathologyKey === 'wheatRust') {
+    chemicalKg = (0.20 * acres).toFixed(2) + ' L Propiconazole';
+    organicKg = (1.00 * acres).toFixed(2) + ' kg Trichoderma';
+  }
+
+  return {
+    waterLiters: totalWater,
+    chemicalTreatment: chemicalKg,
+    organicTreatment: organicKg
+  };
+}
 
 export function initVision() {
   const triggerBtn = document.getElementById('btn-trigger-scan');
