@@ -77,11 +77,15 @@
     </div>
   </header>
 
-  <!-- Hero Section -->
+  <!-- Hero Section with Background Drone Video -->
   <section class="hero hero-public">
-    <div class="hero-overlay"></div>
+    <video class="hero-bg-video" id="hero-bg-video" autoplay muted loop playsinline poster="farm-bg.jpg">
+      <source src="videos/farm-drone-bg.webm" type="video/webm">
+      <source src="videos/farm-drone-bg.mp4" type="video/mp4">
+    </video>
+    <div class="hero-video-overlay"></div>
     <div class="container hero-content text-center">
-      <span class="pill-badge">AI-Powered Smart Agriculture Platform</span>
+      <span class="pill-badge">Precision Agriculture & IoT Telemetry</span>
       <h1 class="hero-title">Empower Your Farm with Precision AI & IoT Telemetry</h1>
       <p class="hero-subtitle" data-i18n="heroSub">Your field is calm. Check irrigation before sunset.</p>
       
@@ -90,6 +94,12 @@
         <a href="login.html?tab=register" class="btn btn-secondary btn-large" data-i18n="signUpBtn">Sign Up Now</a>
       </div>
     </div>
+
+    <!-- Floating Video Control Button -->
+    <button id="hero-video-toggle" class="hero-video-ctrl-btn" aria-label="Pause background video" title="Pause or Play Drone Video">
+      <span class="video-ctrl-icon" id="video-ctrl-icon">⏸</span>
+      <span class="video-ctrl-label" id="video-ctrl-label">Live Video</span>
+    </button>
   </section>
 
   <!-- Trust Strip -->
@@ -325,6 +335,30 @@
           e.preventDefault();
           showToast('Thank you! Your inquiry has been sent to AgroVI support.');
           contactForm.reset();
+        });
+      }
+
+      // Background Drone Video Play/Pause Controller
+      const bgVideo = document.getElementById('hero-bg-video');
+      const videoToggleBtn = document.getElementById('hero-video-toggle');
+      const videoCtrlIcon = document.getElementById('video-ctrl-icon');
+      const videoCtrlLabel = document.getElementById('video-ctrl-label');
+
+      if (bgVideo && videoToggleBtn) {
+        videoToggleBtn.addEventListener('click', () => {
+          if (bgVideo.paused) {
+            bgVideo.play();
+            if (videoCtrlIcon) videoCtrlIcon.textContent = '⏸';
+            if (videoCtrlLabel) videoCtrlLabel.textContent = 'Live Video';
+            videoToggleBtn.setAttribute('aria-label', 'Pause background video');
+            showToast('Field drone video playing');
+          } else {
+            bgVideo.pause();
+            if (videoCtrlIcon) videoCtrlIcon.textContent = '▶';
+            if (videoCtrlLabel) videoCtrlLabel.textContent = 'Paused';
+            videoToggleBtn.setAttribute('aria-label', 'Play background video');
+            showToast('Background video paused');
+          }
         });
       }
     });
