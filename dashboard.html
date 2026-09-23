@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@500;600;700;800&family=Noto+Sans+Tamil:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260923_v4">
+  <link rel="stylesheet" href="styles.css?v=20260923_v5">
   <link rel="manifest" href="manifest.json">
 
   <script>
@@ -196,52 +196,146 @@
 
       <!-- VIEW 1: OVERVIEW -->
       <section id="view-overview" class="dash-view-panel active">
+        <!-- Farmer Plain-Language Summary Banner -->
+        <div class="farmer-summary-banner glass-panel card-padding margin-bottom">
+          <div class="summary-banner-inner flex-between flex-wrap gap-md">
+            <div class="summary-left flex-align gap-md">
+              <div class="status-avatar-circle" title="Overall Field Status">
+                <span class="status-emoji">🌾</span>
+                <span class="status-pulse-ring"></span>
+              </div>
+              <div class="summary-content">
+                <div class="flex-align gap-xs flex-wrap">
+                  <span class="badge badge-success">🟢 FIELD STATUS: EXCELLENT (सब कुछ ठीक है)</span>
+                  <span class="chip chip-mono">IoT Live Sync</span>
+                </div>
+                <p class="summary-text margin-top-xs" id="farmer-summary-text">
+                  Your field is in optimal condition. Root zone moisture is healthy at <strong>42%</strong>. Wheat canopy vigor is strong. Bright sun today — next watering scheduled before sunset.
+                </p>
+              </div>
+            </div>
+            <div class="summary-right flex-align gap-xs">
+              <button class="btn btn-primary btn-sm flex-align gap-xs" id="btn-listen-summary" title="Listen to farm status in your voice">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <span>🔊 Listen (आवाज़ में सुनें)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="view-header">
           <h1 class="view-title" data-i18n="fieldSummaryTitle">Field Summary & Command Center</h1>
-          <p class="view-desc" data-i18n="heroSub">Your field is calm. Check irrigation before sunset.</p>
+          <p class="view-desc" data-i18n="heroSub">Live sensor telemetry, automated irrigation status, and agronomic health metrics.</p>
         </div>
 
         <div class="stats-grid">
-          <div class="stat-card glass-panel">
-            <span class="stat-icon" style="color:var(--color-primary); font-weight:800;">•</span>
-            <div class="stat-info">
+          <!-- Soil Health Card with Visual Gauge -->
+          <div class="stat-card glass-panel visual-gauge-card">
+            <div class="stat-card-top flex-between">
               <span class="stat-label" data-i18n="soilHealthIndex">Soil Health Index</span>
-              <span class="stat-val">94.2 / 100</span>
-              <span class="stat-sub text-success" data-i18n="optimalMoistureStatus">Optimal Moisture & pH</span>
+              <span class="gauge-badge-good">Excellent</span>
+            </div>
+            <div class="stat-main-row flex-align gap-md margin-top-xs">
+              <div class="mini-circular-gauge">
+                <svg width="56" height="56" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="23" class="gauge-bg-circle" />
+                  <circle cx="28" cy="28" r="23" class="gauge-fill-circle stroke-green" style="stroke-dasharray: 144.5; stroke-dashoffset: 8.4;" />
+                  <text x="28" y="32" class="gauge-center-text" text-anchor="middle">94%</text>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-val">94.2 / 100</span>
+                <span class="stat-sub text-success" data-i18n="optimalMoistureStatus">Optimal Moisture & Organic pH</span>
+              </div>
             </div>
           </div>
-          <div class="stat-card glass-panel">
-            <span class="stat-icon" style="color:var(--color-teal); font-weight:800;">•</span>
-            <div class="stat-info">
+
+          <!-- Root Moisture Card with Visual Level Bar -->
+          <div class="stat-card glass-panel visual-gauge-card">
+            <div class="stat-card-top flex-between">
               <span class="stat-label" data-i18n="rootZoneMoisture">Root Zone Moisture</span>
-              <span class="stat-val">42%</span>
-              <span class="stat-sub">Zone 2 Drip Active</span>
+              <span class="gauge-badge-good">Zone 2 Dripping</span>
+            </div>
+            <div class="stat-main-row flex-align gap-md margin-top-xs">
+              <div class="mini-circular-gauge">
+                <svg width="56" height="56" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="23" class="gauge-bg-circle" />
+                  <circle cx="28" cy="28" r="23" class="gauge-fill-circle stroke-teal" style="stroke-dasharray: 144.5; stroke-dashoffset: 83.8;" />
+                  <text x="28" y="32" class="gauge-center-text" text-anchor="middle">42%</text>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-val">42% (Optimal)</span>
+                <span class="stat-sub">Healthy root transpiration</span>
+              </div>
             </div>
           </div>
-          <div class="stat-card glass-panel">
-            <span class="stat-icon" style="color:var(--color-accent); font-weight:800;">•</span>
-            <div class="stat-info">
+
+          <!-- Solar Radiation with Sun Meter -->
+          <div class="stat-card glass-panel visual-gauge-card">
+            <div class="stat-card-top flex-between">
               <span class="stat-label" data-i18n="solarRadiation">Solar Radiation</span>
-              <span class="stat-val">850 W/m²</span>
-              <span class="stat-sub" data-i18n="highET0">High Evapotranspiration</span>
+              <span class="gauge-badge-warning">Bright Sun</span>
+            </div>
+            <div class="stat-main-row flex-align gap-md margin-top-xs">
+              <div class="mini-circular-gauge">
+                <svg width="56" height="56" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="23" class="gauge-bg-circle" />
+                  <circle cx="28" cy="28" r="23" class="gauge-fill-circle stroke-amber" style="stroke-dasharray: 144.5; stroke-dashoffset: 36.1;" />
+                  <text x="28" y="32" class="gauge-center-text" text-anchor="middle">850</text>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-val">850 W/m²</span>
+                <span class="stat-sub" data-i18n="highET0">High evaporation — Water by 5 PM</span>
+              </div>
             </div>
           </div>
-          <div class="stat-card glass-panel">
-            <span class="stat-icon" style="color:var(--color-primary); font-weight:800;">•</span>
-            <div class="stat-info">
+
+          <!-- NDVI Vigor with Leaf Meter -->
+          <div class="stat-card glass-panel visual-gauge-card">
+            <div class="stat-card-top flex-between">
               <span class="stat-label" data-i18n="ndviVegetation">NDVI Vegetation</span>
-              <span class="stat-val">0.82 Vigor</span>
-              <span class="stat-sub text-success" data-i18n="healthyCanopy">Healthy Canopy</span>
+              <span class="gauge-badge-good">Dense Vigor</span>
+            </div>
+            <div class="stat-main-row flex-align gap-md margin-top-xs">
+              <div class="mini-circular-gauge">
+                <svg width="56" height="56" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="23" class="gauge-bg-circle" />
+                  <circle cx="28" cy="28" r="23" class="gauge-fill-circle stroke-green" style="stroke-dasharray: 144.5; stroke-dashoffset: 26.0;" />
+                  <text x="28" y="32" class="gauge-center-text" text-anchor="middle">0.82</text>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-val">0.82 Vigor</span>
+                <span class="stat-sub text-success" data-i18n="healthyCanopy">Lush & disease-free leaves</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="quick-actions-bar margin-top">
-          <h3 data-i18n="quickActions">Quick Actions</h3>
-          <div class="action-buttons-flex">
-            <button class="btn btn-primary" id="btn-scan-leaf-quick" data-i18n="scanLeaf">Scan Leaf</button>
-            <button class="btn btn-secondary" id="btn-irrigate-quick" data-i18n="controlWater">Control water</button>
-            <button class="btn btn-tertiary" id="btn-weather-quick" data-i18n="checkWeather">Check weather</button>
+          <div class="flex-between flex-wrap gap-xs">
+            <h3 data-i18n="quickActions" style="margin:0;">Quick Actions for Farmers</h3>
+            <span class="text-xs text-muted">1-Touch Shortcuts</span>
+          </div>
+          <div class="action-buttons-flex margin-top-xs">
+            <button class="btn btn-primary flex-align gap-xs" id="btn-scan-leaf-quick" data-i18n="scanLeaf">
+              <span>🌿</span>
+              <span>Scan Leaf (पत्ता जांचें)</span>
+            </button>
+            <button class="btn btn-secondary flex-align gap-xs" id="btn-irrigate-quick" data-i18n="controlWater">
+              <span>💧</span>
+              <span>Control Water (पानी चालू / बंद)</span>
+            </button>
+            <button class="btn btn-tertiary flex-align gap-xs" id="btn-weather-quick" data-i18n="checkWeather">
+              <span>☀️</span>
+              <span>Check Weather (मौसम देखें)</span>
+            </button>
+            <button class="btn btn-tertiary flex-align gap-xs btn-helpline-quick" id="btn-call-helpline-quick" title="Call Kisan Helpline 1800-180-1551">
+              <span>📞</span>
+              <span>Kisan Helpline (1800-180-1551)</span>
+            </button>
           </div>
         </div>
       </section>
@@ -330,6 +424,16 @@
               <button class="btn btn-primary margin-top" id="btn-trigger-scan" data-i18n="runScanBtn">Run AI Diagnostic Scan</button>
             </div>
 
+            <!-- Quick 1-Click Sample Leaf Tests -->
+            <div class="sample-leaf-row margin-top">
+              <span class="text-xs font-bold" style="display:block; margin-bottom:6px;">🧪 1-Click Sample Tests (तुरंत नमूना पत्ता जांचें):</span>
+              <div class="sample-buttons-flex">
+                <button type="button" class="btn btn-xs btn-outline sample-leaf-btn" id="sample-leaf-healthy">🌿 Healthy Wheat Leaf</button>
+                <button type="button" class="btn btn-xs btn-outline sample-leaf-btn" id="sample-leaf-blight">🍂 Tomato Blight Leaf</button>
+                <button type="button" class="btn btn-xs btn-outline sample-leaf-btn" id="sample-leaf-rust">🌾 Yellow Stripe Rust</button>
+              </div>
+            </div>
+
             <div class="canvas-preview-wrapper margin-top">
               <label style="display:block; font-weight:700; font-size:11px; margin-bottom:6px;" data-i18n="defectHeatmapLabel">AI Defect Heatmap Segmentation:</label>
               <canvas id="vision-heatmap-canvas" width="280" height="180" class="vision-canvas"></canvas>
@@ -339,6 +443,18 @@
           <div class="glass-panel card-padding" id="vision-results-box">
             <h3 data-i18n="reportTitle">AI Diagnostic Scan & Remedy Report</h3>
             
+            <div class="scan-status-alert alert-warning margin-top" id="scan-verdict-banner">
+              <strong>⚠️ Farmer Verdict:</strong> Early Blight detected. Spray Neem Oil + Mancozeb early morning.
+            </div>
+
+            <div class="flex-between margin-top-xs">
+              <span class="text-xs text-muted">Audio Agronomist</span>
+              <button type="button" class="btn btn-sm btn-secondary flex-align gap-xs" id="btn-speak-diagnosis" title="Listen to remedy in voice">
+                <span>🔊</span>
+                <span>Listen to Remedy (आवाज़ में सुनें)</span>
+              </button>
+            </div>
+
             <div class="scan-status-alert margin-top">
               <strong data-i18n="pathologyLabel">Pathology Diagnosis:</strong> <span id="scan-health-status" style="color:var(--color-primary); font-weight:700;">Early Blight (Alternaria solani) (96.8% Confidence)</span>
             </div>
@@ -703,9 +819,19 @@
             <ul class="weather-metrics-list margin-top">
               <li><span data-i18n="humidityLabel">Relative Humidity:</span> <strong>58%</strong></li>
               <li><span data-i18n="windSpeedLabel">Wind Speed:</span> <strong>12 km/h (NW)</strong></li>
-              <li><span data-i18n="rainChanceLabel">24h Rain Chance:</span> <strong>15%</strong></li>
-              <li><span data-i18n="frostRiskLabel">Frost Risk:</span> <strong class="text-success">Zero Risk</strong></li>
+              <li><span data-i18n="rainChanceLabel">24h Rain Chance:</span> <strong>15% (Low Risk)</strong></li>
+              <li><span data-i18n="frostRiskLabel">Frost Risk:</span> <strong class="text-success">Zero Risk (Safe)</strong></li>
             </ul>
+
+            <!-- Farmer Plain-Language Weather Advisory -->
+            <div class="farmer-advisory-box margin-top">
+              <h4 style="margin:0 0 6px 0; font-size:13px; color:var(--color-primary);">🌾 Farm Operations Advisory for Today:</h4>
+              <div class="advisory-chips-flex flex-wrap gap-xs">
+                <span class="chip chip-success">🚜 Spraying: SAFE (Gentle wind)</span>
+                <span class="chip chip-teal">💧 Drip: Schedule 5:00 PM</span>
+                <span class="chip chip-mono">🌾 Harvesting: Safe for 4 Days</span>
+              </div>
+            </div>
           </div>
 
           <div class="glass-panel card-padding">
@@ -741,6 +867,12 @@
               <span class="mandi-trend" id="mandi-trend-display" style="color: var(--color-success); font-weight: 600;">+2.4% (Nashik APMC Hub)</span>
             </div>
 
+            <!-- Farmer Selling Window Advice -->
+            <div class="farmer-market-tip margin-top-xs">
+              <span class="badge badge-success">📈 High Price Peak</span>
+              <span class="text-xs" style="margin-left:6px; color:var(--color-text-muted);">Wheat is trading near its seasonal peak. Recommended window to sell surplus grain.</span>
+            </div>
+
             <div class="margin-top">
               <h4 data-i18n="chartTrendTitle">6-Day Price Trend (SVG)</h4>
               <div id="mandi-svg-chart"></div>
@@ -752,7 +884,15 @@
             <form id="buyer-form" class="margin-top">
               <div class="form-group">
                 <label data-i18n="offerQtyLabel">Offer Quantity (Quintals)</label>
-                <input type="number" class="form-input" placeholder="e.g. 50 Quintals" required>
+                <input type="number" id="buyer-offer-qty" class="form-input" placeholder="e.g. 50 Quintals" required>
+                <!-- Quick Quintal Selector Chips -->
+                <div class="quick-qtl-chips flex-wrap gap-xs margin-top-xs">
+                  <span class="text-xs text-muted" style="align-self:center;">Quick Select:</span>
+                  <button type="button" class="btn btn-xs btn-outline qtl-chip-btn" data-qty="10">10 Qtl</button>
+                  <button type="button" class="btn btn-xs btn-outline qtl-chip-btn" data-qty="25">25 Qtl</button>
+                  <button type="button" class="btn btn-xs btn-outline qtl-chip-btn" data-qty="50">50 Qtl</button>
+                  <button type="button" class="btn btn-xs btn-outline qtl-chip-btn" data-qty="100">100 Qtl</button>
+                </div>
               </div>
               <div class="form-group">
                 <label data-i18n="harvestDateLabel">Harvest Availability Date</label>
@@ -830,6 +970,64 @@
       <div class="modal-footer margin-top flex-between">
         <button class="btn btn-tertiary" id="modal-close-footer-btn">Close</button>
         <button class="btn btn-primary" id="modal-action-btn">Edit Preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kisan Agri Helpline & Expert Support Modal -->
+  <div class="modal-backdrop" id="kisan-helpline-modal" style="display:none;" aria-hidden="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-header flex-between">
+        <h3 style="margin:0; font-size:1.15rem; display:flex; align-items:center; gap:8px;">
+          <span>📞</span>
+          <span>Kisan Agri Helpline & Expert Support</span>
+        </h3>
+        <button id="helpline-close-btn" class="btn btn-tertiary" style="padding:2px 8px; font-size:18px; border:none; cursor:pointer;" aria-label="Close Helpline">×</button>
+      </div>
+      <div class="modal-body margin-top">
+        <p class="text-xs text-muted" style="margin-bottom:14px;">
+          Direct government & agricultural scientist helplines. Free toll-free voice advice for crop diseases, weather alerts, and market subsidies.
+        </p>
+
+        <div class="helpline-contact-card margin-bottom-sm">
+          <div class="flex-between flex-wrap gap-xs">
+            <div>
+              <strong style="color:var(--color-primary); font-size:14px;">🌾 Kisan Call Center (Government of India)</strong>
+              <p style="margin:2px 0 0; font-size:12px; color:var(--color-text-muted);">Available in 22 regional languages • 6:00 AM – 10:00 PM</p>
+            </div>
+            <a href="tel:18001801551" class="btn btn-primary btn-sm flex-align gap-xs" style="text-decoration:none;">
+              <span>📞</span> <span>1800-180-1551</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="helpline-contact-card margin-bottom-sm">
+          <div class="flex-between flex-wrap gap-xs">
+            <div>
+              <strong style="color:var(--color-accent); font-size:14px;">🛡️ AgroVI Agri Scientist Helpline</strong>
+              <p style="margin:2px 0 0; font-size:12px; color:var(--color-text-muted);">AI Diagnostics & Sensor Support Desk • 24/7 Priority</p>
+            </div>
+            <a href="tel:18008904422" class="btn btn-secondary btn-sm flex-align gap-xs" style="text-decoration:none;">
+              <span>📞</span> <span>1800-890-4422</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="helpline-contact-card margin-bottom-sm">
+          <div class="flex-between flex-wrap gap-xs">
+            <div>
+              <strong style="font-size:14px;">🚜 Nashik KVK Krishi Vigyan Kendra</strong>
+              <p style="margin:2px 0 0; font-size:12px; color:var(--color-text-muted);">Local District Agri Officer • Field Inspections</p>
+            </div>
+            <a href="tel:02532571234" class="btn btn-tertiary btn-sm flex-align gap-xs" style="text-decoration:none;">
+              <span>📞</span> <span>0253-2571234</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer margin-top flex-between">
+        <span class="text-xs text-muted">Toll-free calls from all mobile operators.</span>
+        <button class="btn btn-tertiary" id="helpline-close-footer">Close</button>
       </div>
     </div>
   </div>

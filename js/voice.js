@@ -118,15 +118,15 @@ export const VoiceAssistant = {
     const lower = cmd.toLowerCase();
 
     // 1. Direct Valve Water Actuation
-    if (lower.includes('start water') || lower.includes('open valve') || lower.includes('पानी चालू') || lower.includes('தண்ணீர் திற')) {
-      const btn = document.getElementById('btn-valve-z1');
+    if (lower.includes('start water') || lower.includes('open valve') || lower.includes('पानी चालू') || lower.includes('तண்ணீர் திற') || lower.includes('valve on')) {
+      const btn = document.getElementById('valve-btn-1') || document.getElementById('btn-valve-z1');
       if (btn) btn.click();
       this.playAcousticChime(880, 0.15);
       this.speak('Opening Zone 1 solenoid valve. Booster pump synchronized.');
       showToast('Voice Command: Opening Zone 1 Valve');
       return;
     }
-    if (lower.includes('stop water') || lower.includes('close valve') || lower.includes('पानी बंद') || lower.includes('தண்ணீர் நிறுத்து')) {
+    if (lower.includes('stop water') || lower.includes('close valve') || lower.includes('पानी बंद') || lower.includes('தண்ணீர் நிறுத்து') || lower.includes('valve off')) {
       const btnAuto = document.getElementById('mode-btn-auto');
       if (btnAuto) btnAuto.click();
       this.playAcousticChime(660, 0.15);
@@ -135,29 +135,42 @@ export const VoiceAssistant = {
       return;
     }
 
-    // 2. Multilingual Views Navigation
-    if (lower.includes('scan') || lower.includes('leaf') || lower.includes('disease') || lower.includes('पत्ता') || lower.includes('ഇല') || lower.includes('രോഗം') || lower.includes('இலை')) {
+    // 2. Farmer Helpline & Support
+    if (lower.includes('help') || lower.includes('helpline') || lower.includes('मदद') || lower.includes('कॉल') || lower.includes('உதவி') || lower.includes('सहायता')) {
+      const helplineBtn = document.getElementById('btn-call-helpline-quick') || document.getElementById('btn-popup-support');
+      if (helplineBtn) helplineBtn.click();
+      this.playAcousticChime(880, 0.15);
+      this.speak('Opening Kisan Agri Helpline support.');
+      return;
+    }
+
+    // 3. Multilingual Views Navigation
+    if (lower.includes('scan') || lower.includes('leaf') || lower.includes('disease') || lower.includes('पत्ता') || lower.includes('रोग') || lower.includes('ഇല') || lower.includes('രോഗം') || lower.includes('இலை')) {
       this.triggerView('cropVision');
       this.playAcousticChime(880, 0.15);
       this.speak('Opening Crop Vision AI Diagnostic Scanner.');
-    } else if (lower.includes('nutrition') || lower.includes('npk') || lower.includes('soil') || lower.includes('पोषण') || lower.includes('വളം') || lower.includes('ஊட்டச்சத்து')) {
+    } else if (lower.includes('nutrition') || lower.includes('npk') || lower.includes('fertilizer') || lower.includes('soil') || lower.includes('खाद') || lower.includes('पोषण') || lower.includes('വളം') || lower.includes('ஊட்டச்சத்து')) {
       this.triggerView('nutrition');
       this.playAcousticChime(880, 0.15);
       this.speak('Opening Plant Nutrition and Soil N P K analytics.');
-    } else if (lower.includes('water') || lower.includes('irrigation') || lower.includes('drip') || lower.includes('पानी') || lower.includes('നനയ്ക്കുക') || lower.includes('பாசனம்')) {
+    } else if (lower.includes('water') || lower.includes('irrigation') || lower.includes('drip') || lower.includes('पानी') || lower.includes('सिंचाई') || lower.includes('നനയ്ക്കുക') || lower.includes('பாசனம்')) {
       this.triggerView('irrigation');
       this.playAcousticChime(880, 0.15);
       this.speak('Opening Smart Drip Irrigation zone controllers.');
-    } else if (lower.includes('weather') || lower.includes('rain') || lower.includes('temp') || lower.includes('मौसम') || lower.includes('കാലാവസ്ഥ') || lower.includes('வானிலை')) {
+    } else if (lower.includes('weather') || lower.includes('rain') || lower.includes('temp') || lower.includes('मौसम') || lower.includes('बारिश') || lower.includes('കാലാവസ്ഥ') || lower.includes('வானிலை')) {
       this.triggerView('weatherDesk');
       this.playAcousticChime(880, 0.15);
       this.speak('Opening Micro Climate Weather Desk.');
-    } else if (lower.includes('mandi') || lower.includes('market') || lower.includes('price') || lower.includes('मंडी') || lower.includes('വിപണി') || lower.includes('சந்தை')) {
+    } else if (lower.includes('mandi') || lower.includes('market') || lower.includes('price') || lower.includes('भाव') || lower.includes('मंडी') || lower.includes('बाजार') || lower.includes('വിപണി') || lower.includes('சந்தை')) {
       this.triggerView('marketHub');
       this.playAcousticChime(880, 0.15);
       this.speak('Opening APMC Mandi Market Commodity Hub.');
+    } else if (lower.includes('overview') || lower.includes('home') || lower.includes('summary') || lower.includes('फार्म') || lower.includes('होम')) {
+      this.triggerView('overview');
+      this.playAcousticChime(880, 0.15);
+      this.speak('Opening Farm Overview and Command Center.');
     } else {
-      showToast(`Unrecognized command: "${cmd}". Try saying "Scan Leaf" or "Start Water".`);
+      showToast(`Unrecognized command: "${cmd}". Try saying "Scan Leaf", "Start Water", or "Mandi Bhav".`);
     }
   },
 

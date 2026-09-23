@@ -109,9 +109,36 @@ export function initVision() {
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('leaf-file-input');
 
+  const btnHealthy = document.getElementById('sample-leaf-healthy');
+  const btnBlight = document.getElementById('sample-leaf-blight');
+  const btnRust = document.getElementById('sample-leaf-rust');
+  const btnSpeakDiag = document.getElementById('btn-speak-diagnosis');
+
   if (triggerBtn) {
     triggerBtn.addEventListener('click', () => {
-      runAiScan();
+      runAiScan('earlyBlight');
+    });
+  }
+
+  if (btnHealthy) {
+    btnHealthy.addEventListener('click', () => {
+      runAiScan('healthy');
+    });
+  }
+  if (btnBlight) {
+    btnBlight.addEventListener('click', () => {
+      runAiScan('earlyBlight');
+    });
+  }
+  if (btnRust) {
+    btnRust.addEventListener('click', () => {
+      runAiScan('wheatRust');
+    });
+  }
+
+  if (btnSpeakDiag) {
+    btnSpeakDiag.addEventListener('click', () => {
+      speakCurrentDiagnosis();
     });
   }
 
@@ -172,7 +199,6 @@ function analyzeCanvasPixels(img) {
   ctx.clearRect(0, 0, w, h);
   ctx.drawImage(img, 0, 0, w, h);
 
-  // Perform actual pixel RGB analysis using getImageData
   try {
     const imgData = ctx.getImageData(0, 0, w, h);
     const data = imgData.data;
@@ -185,12 +211,10 @@ function analyzeCanvasPixels(img) {
       const g = data[i + 1];
       const b = data[i + 2];
 
-      // Greenness index check vs brown/red pathogen spots
       if (g > r && g > b) {
         greenPixels++;
       } else if (r > 100 && (r > g || g < 80)) {
         defectPixels++;
-        // Highlight defect pixel in red overlay
         data[i] = 239;
         data[i + 1] = 68;
         data[i + 2] = 68;
@@ -200,13 +224,18 @@ function analyzeCanvasPixels(img) {
     ctx.putImageData(imgData, 0, 0);
 
     const calculatedDefectPct = Math.min(85, Math.max(12, Math.round((defectPixels / totalPixels) * 200)));
-    renderDiagnosticResults(calculatedDefectPct);
+    renderDiagnosticResults('earlyBlight', calculatedDefectPct);
   } catch (err) {
-    runAiScan();
+    runAiScan('earlyBlight');
   }
 }
 
-export function runAiScan() {
+let lastDiagnosis = {
+  name: 'Healthy Crop Canopy',
+  remedy: 'Optimal growth. No chemical application required.'
+};
+
+export function runAiScan(diseaseKey = 'earlyBlight') {
   showToast('Running ICAR AI Diagnostic Model…');
 
   const canvas = document.getElementById('vision-heatmap-canvas');
@@ -217,59 +246,155 @@ export function runAiScan() {
 
     ctx.clearRect(0, 0, w, h);
 
-    // Draw simulated leaf outline
-    ctx.fillStyle = '#2d5a27';
-    ctx.beginPath();
-    ctx.ellipse(w / 2, h / 2, 85, 55, Math.PI / 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Leaf veins
-    ctx.strokeStyle = '#6db367';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(w / 4, h * 0.75);
-    ctx.lineTo(w * 0.75, h * 0.25);
-    ctx.stroke();
-
-    // Concentric ring disease spots
-    const spots = [
-      { x: w * 0.45, y: h * 0.4, r: 16, color: 'rgba(239, 68, 68, 0.8)' },
-      { x: w * 0.55, y: h * 0.48, r: 12, color: 'rgba(245, 158, 11, 0.8)' },
-      { x: w * 0.35, y: h * 0.55, r: 14, color: 'rgba(239, 68, 68, 0.7)' }
-    ];
-
-    spots.forEach(s => {
-      ctx.fillStyle = s.color;
+    if (diseaseKey === 'healthy') {
+      // Lush green healthy leaf
+      ctx.fillStyle = '#2e7d32';
       ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.ellipse(w / 2, h / 2, 90, 52, Math.PI / 4, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(s.x - s.r - 3, s.y - s.r - 3, (s.r + 3) * 2, (s.r + 3) * 2);
-    });
-  }
+      // Healthy vibrant veins
+      ctx.strokeStyle = '#a5d6a7';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.22, h * 0.78);
+      ctx.lineTo(w * 0.78, h * 0.22);
+      ctx.stroke();
 
-  renderDiagnosticResults(PathologyDatabase.earlyBlight.defaultSeverity);
+      // Lateral veins
+      for (let i = 1; i <= 4; i++) {
+        const px = w * 0.25 + i * 22;
+        const py = h * 0.75 - i * 22;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px - 16, py - 18);
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + 18, py + 16);
+        ctx.stroke();
+      }
+
+      renderDiagnosticResults('healthy', 0);
+    } else if (diseaseKey === 'wheatRust') {
+      // Yellow-orange stripe rust
+      ctx.fillStyle = '#558b2f';
+      ctx.beginPath();
+      ctx.ellipse(w / 2, h / 2, 85, 50, Math.PI / 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Veins
+      ctx.strokeStyle = '#8bc34a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.25, h * 0.75);
+      ctx.lineTo(w * 0.75, h * 0.25);
+      ctx.stroke();
+
+      // Orange rust stripes
+      const rustStripes = [
+        { x: w * 0.42, y: h * 0.45, w: 35, h: 8 },
+        { x: w * 0.48, y: h * 0.35, w: 40, h: 7 },
+        { x: w * 0.35, y: h * 0.58, w: 30, h: 8 }
+      ];
+
+      rustStripes.forEach(s => {
+        ctx.fillStyle = 'rgba(234, 88, 12, 0.85)';
+        ctx.fillRect(s.x, s.y, s.w, s.h);
+        ctx.strokeStyle = '#f97316';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(s.x - 2, s.y - 2, s.w + 4, s.h + 4);
+      });
+
+      renderDiagnosticResults('wheatRust', PathologyDatabase.wheatRust.defaultSeverity);
+    } else {
+      // Default: Early Blight concentric lesions
+      ctx.fillStyle = '#2d5a27';
+      ctx.beginPath();
+      ctx.ellipse(w / 2, h / 2, 85, 55, Math.PI / 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#6db367';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w / 4, h * 0.75);
+      ctx.lineTo(w * 0.75, h * 0.25);
+      ctx.stroke();
+
+      const spots = [
+        { x: w * 0.45, y: h * 0.4, r: 16, color: 'rgba(239, 68, 68, 0.8)' },
+        { x: w * 0.55, y: h * 0.48, r: 12, color: 'rgba(245, 158, 11, 0.8)' },
+        { x: w * 0.35, y: h * 0.55, r: 14, color: 'rgba(239, 68, 68, 0.7)' }
+      ];
+
+      spots.forEach(s => {
+        ctx.fillStyle = s.color;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(s.x - s.r - 3, s.y - s.r - 3, (s.r + 3) * 2, (s.r + 3) * 2);
+      });
+
+      renderDiagnosticResults('earlyBlight', PathologyDatabase.earlyBlight.defaultSeverity);
+    }
+  }
 }
 
-function renderDiagnosticResults(severityPct) {
-  const disease = PathologyDatabase.earlyBlight;
+function renderDiagnosticResults(diseaseKey = 'earlyBlight', severityPct = 34) {
+  const disease = PathologyDatabase[diseaseKey] || PathologyDatabase.earlyBlight;
+  lastDiagnosis = {
+    name: disease.name,
+    remedy: disease.organicRemedy
+  };
+
   const statusEl = document.getElementById('scan-health-status');
   const severityValEl = document.getElementById('scan-severity-val');
   const severityBarEl = document.getElementById('scan-severity-bar');
   const organicEl = document.getElementById('scan-organic-remedy');
   const chemicalEl = document.getElementById('scan-chemical-remedy');
   const dosageEl = document.getElementById('scan-dosage-acre');
+  const verdictBanner = document.getElementById('scan-verdict-banner');
 
-  if (statusEl) statusEl.textContent = `${disease.name} (${disease.confidence}% Confidence)`;
+  if (statusEl) {
+    statusEl.textContent = `${disease.name} (${disease.confidence}% Confidence)`;
+    statusEl.style.color = diseaseKey === 'healthy' ? 'var(--color-primary)' : (diseaseKey === 'wheatRust' ? '#ea580c' : '#ef4444');
+  }
+
   if (severityValEl) severityValEl.textContent = `${severityPct}% Defect Area`;
-  if (severityBarEl) severityBarEl.style.width = `${severityPct}%`;
+  if (severityBarEl) {
+    severityBarEl.style.width = `${Math.max(5, severityPct)}%`;
+    severityBarEl.style.background = diseaseKey === 'healthy' ? 'var(--color-primary)' : (diseaseKey === 'wheatRust' ? '#ea580c' : 'var(--amber-500)');
+  }
+
   if (organicEl) organicEl.textContent = disease.organicRemedy;
   if (chemicalEl) chemicalEl.textContent = disease.chemicalRemedy;
   if (dosageEl) dosageEl.textContent = disease.dosagePerAcre;
 
+  if (verdictBanner) {
+    if (diseaseKey === 'healthy') {
+      verdictBanner.className = 'scan-status-alert alert-success margin-top';
+      verdictBanner.innerHTML = '<strong>🟢 Farmer Verdict:</strong> Crop is healthy! Maintain regular organic spray.';
+    } else {
+      verdictBanner.className = 'scan-status-alert alert-warning margin-top';
+      verdictBanner.innerHTML = `<strong>⚠️ Farmer Verdict:</strong> Disease detected (${disease.name}). Spray organic remedy early morning.`;
+    }
+  }
+
   setTimeout(() => {
-    showToast('ICAR Agronomy Pathology Report Generated Successfully!');
-  }, 800);
+    showToast(`ICAR Agronomy Report: ${disease.name}`);
+  }, 400);
+}
+
+function speakCurrentDiagnosis() {
+  if (!('speechSynthesis' in window)) {
+    showToast('Speech synthesis not available in this browser.');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const text = `Crop diagnosis is ${lastDiagnosis.name}. Recommended treatment: ${lastDiagnosis.remedy}`;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.95;
+  window.speechSynthesis.speak(utterance);
+  showToast('Reading diagnosis aloud… 🔊');
 }

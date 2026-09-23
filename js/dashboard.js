@@ -125,6 +125,9 @@ export const Dashboard = {
     this.bindSidebarNavigation();
     this.bindPlotSwitcher();
     this.bindInteractiveControls();
+    this.bindQuickActions();
+    this.bindHelplineModal();
+    this.bindMandiQuickChips();
     this.bindMandiLookup();
     this.bindBuyerOfferForm();
     this.bindDebugBadge();
@@ -157,6 +160,97 @@ export const Dashboard = {
       this.renderActivePlotUI();
       this.renderChartsAndGauges();
     });
+  },
+
+  switchToView(viewName) {
+    const navItem = document.querySelector(`.dash-nav-item[data-view="${viewName}"]`);
+    if (navItem) {
+      navItem.click();
+    } else {
+      const targetPanel = document.getElementById(`view-${viewName}`);
+      if (targetPanel) {
+        document.querySelectorAll('.dash-view-panel').forEach(p => p.classList.remove('active'));
+        targetPanel.classList.add('active');
+      }
+    }
+  },
+
+  bindQuickActions() {
+    const scanBtn = document.getElementById('btn-scan-leaf-quick');
+    const irrigateBtn = document.getElementById('btn-irrigate-quick');
+    const weatherBtn = document.getElementById('btn-weather-quick');
+    const helplineBtn = document.getElementById('btn-call-helpline-quick');
+    const listenSummaryBtn = document.getElementById('btn-listen-summary');
+
+    scanBtn?.addEventListener('click', () => {
+      this.switchToView('cropVision');
+      showToast('Opening Crop Vision Leaf Scanner 🌿');
+    });
+
+    irrigateBtn?.addEventListener('click', () => {
+      this.switchToView('irrigation');
+      showToast('Opening Smart Drip Irrigation Controls 💧');
+    });
+
+    weatherBtn?.addEventListener('click', () => {
+      this.switchToView('weatherDesk');
+      showToast('Opening Micro-Climate Weather Desk ☀️');
+    });
+
+    helplineBtn?.addEventListener('click', () => {
+      const modal = document.getElementById('kisan-helpline-modal');
+      if (modal) modal.style.display = 'flex';
+      showToast('Kisan Agri Helpline (Toll-Free 1800-180-1551)');
+    });
+
+    listenSummaryBtn?.addEventListener('click', () => {
+      this.speakFarmerSummary();
+    });
+  },
+
+  bindHelplineModal() {
+    const modal = document.getElementById('kisan-helpline-modal');
+    const closeBtn = document.getElementById('helpline-close-btn');
+    const closeFooter = document.getElementById('helpline-close-footer');
+
+    const closeModal = () => {
+      if (modal) modal.style.display = 'none';
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    closeFooter?.addEventListener('click', closeModal);
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+  },
+
+  bindMandiQuickChips() {
+    document.querySelectorAll('.qtl-chip-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const qty = btn.getAttribute('data-qty');
+        const input = document.getElementById('buyer-offer-qty');
+        if (input && qty) {
+          input.value = qty;
+          input.focus();
+          showToast(`Set offer quantity to ${qty} Quintals`);
+        }
+      });
+    });
+  },
+
+  speakFarmerSummary() {
+    if (!('speechSynthesis' in window)) {
+      showToast('Voice read-aloud not supported in this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const plot = Store.get('activePlot') || { name: 'North Field', crop: 'Wheat' };
+    const text = `Farm Summary for ${plot.name}. Crop is ${plot.crop}. Soil health index is 94 percent, optimal condition. Root zone moisture is 42 percent. Weather is sunny with 28 degrees Celsius, zero frost risk. Irrigation valve 2 is active.`;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.95;
+    window.speechSynthesis.speak(utterance);
+    showToast('Speaking field summary aloud… 🔊');
   },
 
   bindProfileMenu() {
@@ -240,7 +334,12 @@ export const Dashboard = {
     // Support trigger from dropdown
     btnSupport?.addEventListener('click', () => {
       container?.classList.remove('open');
-      showToast('AgroVI Agri Helpline: +91 1800-AGRO-AI (Toll-Free). Available Mon-Sat 6AM-8PM IST.');
+      const helplineModal = document.getElementById('kisan-helpline-modal');
+      if (helplineModal) {
+        helplineModal.style.display = 'flex';
+      } else {
+        showToast('AgroVI Agri Helpline: +91 1800-AGRO-AI (Toll-Free). Available Mon-Sat 6AM-8PM IST.');
+      }
     });
 
     // Logout trigger
@@ -365,14 +464,55 @@ export const Dashboard = {
     const dapKg = Math.max(0, Math.round((targetP - pVal) * 2.17 * (acreage / 10)));
     const mopKg = Math.max(0, Math.round((targetK - kVal) * 1.66 * (acreage / 10)));
 
+    // Practical bag calculations: Urea = 45kg bag, DAP = 50kg bag, MOP = 50kg bag
+    const ureaBags = (ureaKg / 45).toFixed(1);
+    const dapBags = (dapKg / 50).toFixed(1);
+    const mopBags = (mopKg / 50).toFixed(1);
+
     const adviceEl = document.getElementById('npk-recommendation');
     if (adviceEl) {
       if (ureaKg > 0 || dapKg > 0 || mopKg > 0) {
-        adviceEl.innerHTML = `<strong>ICAR Fertilizer Requirement for ${acreage} Acres:</strong> Apply ${ureaKg}kg Urea, ${dapKg}kg DAP, and ${mopKg}kg MOP potash.`;
-        adviceEl.style.color = "var(--amber-500)";
+        adviceEl.innerHTML = `
+          <div class="farmer-prescription-box">
+            <div class="prescription-header flex-between">
+              <strong>🌾 Farmer Fertilizer Advice (${acreage} Acres):</strong>
+              <span class="badge badge-warning">Action Needed</span>
+            </div>
+            <div class="prescription-bags-grid margin-top-xs">
+              <div class="bag-item">
+                <span class="bag-name">Urea (45kg bag)</span>
+                <strong class="bag-count">${ureaBags} Bags</strong>
+                <span class="bag-total">(${ureaKg} kg total)</span>
+              </div>
+              <div class="bag-item">
+                <span class="bag-name">DAP (50kg bag)</span>
+                <strong class="bag-count">${dapBags} Bags</strong>
+                <span class="bag-total">(${dapKg} kg total)</span>
+              </div>
+              <div class="bag-item">
+                <span class="bag-name">MOP Potash</span>
+                <strong class="bag-count">${mopBags} Bags</strong>
+                <span class="bag-total">(${mopKg} kg total)</span>
+              </div>
+            </div>
+            <p class="prescription-tip margin-top-xs">
+              💡 <em>Easy Field Rule: Apply all DAP at root zone during sowing; split Urea into 2 doses (half after 21 days, half at flowering).</em>
+            </p>
+          </div>
+        `;
+        adviceEl.style.color = "var(--color-text-main)";
       } else {
-        adviceEl.innerHTML = `<strong>Optimal Soil Nutrient Balance:</strong> Soil Nitrogen, Phosphorus, and Potassium satisfy target yield standards.`;
-        adviceEl.style.color = "var(--color-primary)";
+        adviceEl.innerHTML = `
+          <div class="farmer-prescription-box optimal">
+            <div class="prescription-header flex-between">
+              <strong style="color:var(--color-primary);">🟢 Optimal Soil Nutrient Balance</strong>
+              <span class="badge badge-success">Balanced</span>
+            </div>
+            <p style="margin:6px 0 0 0; font-size:12px; color:var(--color-text-muted);">
+              Soil Nitrogen, Phosphorus, and Potassium satisfy target yield standards. No chemical fertilizers needed for ${acreage} Acres this week.
+            </p>
+          </div>
+        `;
       }
     }
   },
