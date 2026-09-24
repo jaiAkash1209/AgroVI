@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@500;600;700;800&family=Noto+Sans+Tamil:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Mukta:wght@500;600;700;800&family=Noto+Sans+Tamil:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260923_v4">
   <link rel="manifest" href="manifest.json">
 
   <script>
-    (function() {
+    (function () {
       const savedTheme = localStorage.getItem('agrovi-theme') || 'system';
       let effectiveTheme = savedTheme;
       if (savedTheme === 'system') {
@@ -22,6 +25,7 @@
     })();
   </script>
 </head>
+
 <body class="public-page-body">
 
   <!-- Top Utility Bar -->
@@ -34,7 +38,8 @@
       </div>
       <div class="top-actions">
         <div class="lang-selector">
-          <select id="lang-select" class="form-input lang-select-dropdown" style="padding: 3px 8px; font-weight: 700; font-size: 11px; background: var(--green-800); color: #fff; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer;">
+          <select id="lang-select" class="form-input lang-select-dropdown"
+            style="padding: 3px 8px; font-weight: 700; font-size: 11px; background: var(--green-800); color: #fff; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer;">
             <option value="en" style="background: #1e293b; color: #fff;">English (EN)</option>
             <option value="hi" style="background: #1e293b; color: #fff;">हिन्दी (Hindi)</option>
             <option value="ta" style="background: #1e293b; color: #fff;">தமிழ் (Tamil)</option>
@@ -47,8 +52,16 @@
           </select>
         </div>
         <button id="theme-toggle" class="btn btn-tertiary theme-btn" aria-label="Toggle light/dark mode">
-          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" style="display:none;">
+            <circle cx="12" cy="12" r="5" />
+            <path
+              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
         </button>
       </div>
     </div>
@@ -88,7 +101,7 @@
       <span class="pill-badge">Precision Agriculture & IoT Telemetry</span>
       <h1 class="hero-title">Empower Your Farm with Precision AI & IoT Telemetry</h1>
       <p class="hero-subtitle" data-i18n="heroSub">Your field is calm. Check irrigation before sunset.</p>
-      
+
       <div class="hero-buttons flex-center margin-top">
         <a href="login.html" class="btn btn-primary btn-large" data-i18n="loginBtn">Farmer Login →</a>
         <a href="login.html?tab=register" class="btn btn-secondary btn-large" data-i18n="signUpBtn">Sign Up Now</a>
@@ -96,7 +109,8 @@
     </div>
 
     <!-- Floating Video Control Button -->
-    <button id="hero-video-toggle" class="hero-video-ctrl-btn" aria-label="Pause background video" title="Pause or Play Drone Video">
+    <button id="hero-video-toggle" class="hero-video-ctrl-btn" aria-label="Pause background video"
+      title="Pause or Play Drone Video">
       <span class="video-ctrl-icon" id="video-ctrl-icon">⏸</span>
       <span class="video-ctrl-label" id="video-ctrl-label">Live Video</span>
     </button>
@@ -105,10 +119,14 @@
   <!-- Trust Strip -->
   <section class="trust-strip">
     <div class="container trust-strip-inner">
-      <div class="trust-item"><span class="trust-bullet">•</span><span data-i18n="organicCert">100% Organic Certified</span></div>
-      <div class="trust-item"><span class="trust-bullet">•</span><span data-i18n="delivered24h">Delivered Within 24 Hours</span></div>
-      <div class="trust-item"><span class="trust-bullet">•</span><span data-i18n="familyFarmed">Family-Farmed Since 1985</span></div>
-      <div class="trust-item"><span class="trust-bullet">•</span><span data-i18n="zeroWaste">Zero-Waste Packaging</span></div>
+      <div class="trust-item"><span class="trust-bullet">•</span><span data-i18n="organicCert">Former Assistance</span>
+      </div>
+      <div class="trust-item"><span class="trust-bullet">•</span><span data-i18n="delivered24h">Easy Interaction to
+          Farmers</span></div>
+      <div class="trust-item"><span class="trust-bullet">•</span><span data-i18n="familyFarmed">Benefits According to
+          the Lands</span></div>
+      <div class="trust-item"><span class="trust-bullet">•</span><span data-i18n="zeroWaste">Zero-Waste Packaging</span>
+      </div>
     </div>
   </section>
 
@@ -119,8 +137,11 @@
         <div>
           <span class="section-tag font-mono">COMPANY PROFILE</span>
           <h2 class="section-title" data-i18n="aboutAgroAI">About AgroVI</h2>
-          <p class="body-lead">AgroVI is a pioneer in AI-driven smart agriculture, combining over three generations of field farming wisdom with edge computer vision, IoT telemetry, and automated fertigation systems.</p>
-          <p class="body-text margin-top-sm">Headquartered in the agricultural hub of Nashik, Maharashtra, AgroVI works directly with over 12,000+ farmers across India. Our goal is to eradicate crop loss caused by late pest detection, water wastage, and unoptimized soil fertilization.</p>
+          <p class="body-lead">AgroVI is a pioneer in AI-driven smart agriculture, combining over three generations of
+            field farming wisdom with edge computer vision, IoT telemetry, and automated fertigation systems.</p>
+          <p class="body-text margin-top-sm">Headquartered in the agricultural hub of Nashik, Maharashtra, AgroVI works
+            directly with over 12,000+ farmers across India. Our goal is to eradicate crop loss caused by late pest
+            detection, water wastage, and unoptimized soil fertilization.</p>
 
           <div class="stats-row margin-top">
             <div class="stat-mini font-mono"><strong>12,000+</strong><span>Active Farmers</span></div>
@@ -130,9 +151,13 @@
         </div>
         <div>
           <div class="glass-panel card-padding text-center story-card-visual">
-            <div class="story-illustration"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22v-8m0-4V3m0 7l-4-4m4 4l4-4m-4 8l-6-4m6 4l6-4"/></svg></div>
+            <div class="story-illustration"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5">
+                <path d="M12 22v-8m0-4V3m0 7l-4-4m4 4l4-4m-4 8l-6-4m6 4l6-4" />
+              </svg></div>
             <h3 data-i18n="storyTitle">Our Farming Story</h3>
-            <p data-i18n="storyBody">Three generations of farming Nashik fields organically. We nourish the soil, harvest naturally, and empower farmers with AI technology.</p>
+            <p data-i18n="storyBody">Three generations of farming Nashik fields organically. We nourish the soil,
+              harvest naturally, and empower farmers with AI technology.</p>
           </div>
         </div>
       </div>
@@ -149,42 +174,69 @@
 
       <div class="services-grid margin-top">
         <div class="service-card glass-panel card-padding">
-          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg></div>
           <h3>Crop Vision AI Lab</h3>
-          <p>Instant leaf image diagnosis detecting early blight, leaf rust, and pest infestation with dosage remedies.</p>
+          <p>Instant leaf image diagnosis detecting early blight, leaf rust, and pest infestation with dosage remedies.
+          </p>
           <a href="dashboard.html#cropVision" class="service-link">Open Diagnostic Lab →</a>
         </div>
 
         <div class="service-card glass-panel card-padding">
-          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2v7.31L4.15 19.46A2 2 0 0 0 5.86 22h12.28a2 2 0 0 0 1.71-2.54L14 9.31V2"/></svg></div>
+          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5">
+              <path d="M10 2v7.31L4.15 19.46A2 2 0 0 0 5.86 22h12.28a2 2 0 0 0 1.71-2.54L14 9.31V2" />
+            </svg></div>
           <h3>Plant Nutrition & Soil N-P-K</h3>
-          <p>Real-time root-zone Nitrogen, Phosphorus, Potassium balance monitoring and custom organic fertilizer calculators.</p>
+          <p>Real-time root-zone Nitrogen, Phosphorus, Potassium balance monitoring and custom organic fertilizer
+            calculators.</p>
           <a href="dashboard.html#nutrition" class="service-link">View Nutrition Analytics →</a>
         </div>
 
         <div class="service-card glass-panel card-padding">
-          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+            </svg></div>
           <h3>Smart Drip Irrigation</h3>
           <p>Automated zone solenoid valve control reacting dynamically to soil moisture sensors and solar heat.</p>
           <a href="dashboard.html#irrigation" class="service-link">Control Irrigation Grid →</a>
         </div>
 
         <div class="service-card glass-panel card-padding">
-          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg></div>
+          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5">
+              <path
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              <circle cx="12" cy="12" r="4" />
+            </svg></div>
           <h3>Micro-Climate Weather Desk</h3>
           <p>Hyper-local 7-day weather forecasts, dew point tracking, rainfall radar, and frost risk warnings.</p>
           <a href="dashboard.html#weatherDesk" class="service-link">Check Weather Forecast →</a>
         </div>
 
         <div class="service-card glass-panel card-padding">
-          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5">
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg></div>
           <h3>APMC Mandi Market Hub</h3>
-          <p>Live commodity trading prices for Wheat, Rice, Tomato, Cotton with direct farm-to-buyer sales contracts.</p>
+          <p>Live commodity trading prices for Wheat, Rice, Tomato, Cotton with direct farm-to-buyer sales contracts.
+          </p>
           <a href="dashboard.html#marketHub" class="service-link">Explore Market Rates →</a>
         </div>
 
         <div class="service-card glass-panel card-padding">
-          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
+          <div class="service-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+              <path d="M2 12h20" />
+            </svg></div>
           <h3>Satellite & Drone Mapping</h3>
           <p>Multispectral NDVI orbital satellite heatmaps monitoring crop canopy vigor across entire field sectors.</p>
           <a href="dashboard.html#overview" class="service-link">View Orbital Imagery →</a>
@@ -264,7 +316,8 @@
             </div>
             <div class="form-group">
               <label>Message / Inquiry Details *</label>
-              <textarea class="form-input" rows="4" placeholder="Tell us about your farm size and location..." required></textarea>
+              <textarea class="form-input" rows="4" placeholder="Tell us about your farm size and location..."
+                required></textarea>
             </div>
             <button type="submit" class="btn btn-primary btn-full">Submit Inquiry to AgroVI Team →</button>
           </form>
@@ -289,7 +342,8 @@
           <span class="logo-mark" style="color: var(--color-accent); font-weight: 900;">•</span>
           <span class="logo-text">AgroVI</span>
         </a>
-        <p class="margin-top-sm">Smart AI agricultural management system empowering farmers with computer vision, IoT telemetry, and market intelligence.</p>
+        <p class="margin-top-sm">Smart AI agricultural management system empowering farmers with computer vision, IoT
+          telemetry, and market intelligence.</p>
       </div>
       <div class="footer-col">
         <h4>Navigation</h4>
@@ -364,4 +418,5 @@
     });
   </script>
 </body>
+
 </html>
