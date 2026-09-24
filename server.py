@@ -19,6 +19,7 @@ import secrets
 import urllib.request
 import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from socketserver import ThreadingMixIn
 
 PORT = int(os.environ.get("PORT", sys.argv[1] if len(sys.argv) > 1 else 8000))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -348,10 +349,16 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
         return str(self.client_address[0])
 
     def end_headers(self):
-        # Strict Enterprise Security & Defense Headers
-        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
-        self.send_header("Pragma", "no-cache")
-        self.send_header("Expires", "0")
+        # Allow media assets to be buffered and cached smoothly
+        path = getattr(self, "path", "")
+        is_video = path.startswith("/videos/") or path.endswith((".mp4", ".webm", ".mov"))
+        is_media = is_video or path.endswith((".png", ".jpg", ".jpeg", ".ico", ".svg"))
+        if not is_media:
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+        elif not is_video:
+            self.send_header("Cache-Control", "public, max-age=86400")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("X-XSS-Protection", "1; mode=block")
@@ -1133,18 +1140,22 @@ class AgroVIHandler(SimpleHTTPRequestHandler):
 
         self._send_json({"success": False, "message": f"Endpoint not found: {parsed.path}"}, 404)
 
-class DualStackServer(HTTPServer):
+class DualStackServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
     address_family = socket.AF_INET6
 
     def server_bind(self):
         self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
         return super().server_bind()
 
+class ThreadingFallbackServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
 def run():
     try:
         httpd = DualStackServer(("::", PORT), AgroVIHandler)
     except Exception:
-        httpd = HTTPServer(("0.0.0.0", PORT), AgroVIHandler)
+        httpd = ThreadingFallbackServer(("0.0.0.0", PORT), AgroVIHandler)
 
     print(f"==================================================")
     print(f" AgroVI Enterprise Server & Database API")

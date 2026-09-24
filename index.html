@@ -94,8 +94,8 @@
   <!-- Hero Section with Background Drone Video -->
   <section class="hero hero-public">
     <video class="hero-bg-video" id="hero-bg-video" autoplay muted loop playsinline poster="farm-bg.jpg">
-      <source src="videos/farm-drone-bg.webm" type="video/webm">
       <source src="videos/farm-drone-bg.mp4" type="video/mp4">
+      <source src="videos/farm-drone-bg.webm" type="video/webm">
     </video>
     <div class="hero-video-overlay"></div>
     <div class="container hero-content text-center">
@@ -110,7 +110,7 @@
     </div>
 
     <!-- Floating Video Control Button -->
-    <button id="hero-video-toggle" class="hero-video-ctrl-btn" aria-label="Pause background video"
+    <button id="hero-video-toggle" class="floating-video-ctrl-btn" aria-label="Pause background video"
       title="Pause or Play Drone Video">
       <span class="video-ctrl-icon" id="video-ctrl-icon">⏸</span>
       <span class="video-ctrl-label" id="video-ctrl-label">Live Video</span>
@@ -393,28 +393,70 @@
         });
       }
 
-      // Background Drone Video Play/Pause Controller
+      // Background Drone Video Play/Pause Controller with Brave/Chromium Autoplay Resilience
       const bgVideo = document.getElementById('hero-bg-video');
       const videoToggleBtn = document.getElementById('hero-video-toggle');
       const videoCtrlIcon = document.getElementById('video-ctrl-icon');
       const videoCtrlLabel = document.getElementById('video-ctrl-label');
 
-      if (bgVideo && videoToggleBtn) {
-        videoToggleBtn.addEventListener('click', () => {
-          if (bgVideo.paused) {
-            bgVideo.play();
-            if (videoCtrlIcon) videoCtrlIcon.textContent = '⏸';
-            if (videoCtrlLabel) videoCtrlLabel.textContent = 'Live Video';
-            videoToggleBtn.setAttribute('aria-label', 'Pause background video');
-            showToast('Field drone video playing');
-          } else {
-            bgVideo.pause();
-            if (videoCtrlIcon) videoCtrlIcon.textContent = '▶';
-            if (videoCtrlLabel) videoCtrlLabel.textContent = 'Paused';
-            videoToggleBtn.setAttribute('aria-label', 'Play background video');
-            showToast('Background video paused');
+      if (bgVideo) {
+        bgVideo.muted = true;
+        bgVideo.defaultMuted = true;
+        bgVideo.playsInline = true;
+
+        const updateBtn = (playing) => {
+          if (videoCtrlIcon) videoCtrlIcon.textContent = playing ? '⏸' : '▶';
+          if (videoCtrlLabel) videoCtrlLabel.textContent = playing ? 'Live Video' : 'Play Drone';
+          if (videoToggleBtn) {
+            videoToggleBtn.setAttribute('aria-label', playing ? 'Pause background video' : 'Play background video');
+            videoToggleBtn.title = playing ? 'Pause Drone Video' : 'Play Drone Video';
           }
+        };
+
+        bgVideo.addEventListener('play', () => updateBtn(true));
+        bgVideo.addEventListener('pause', () => updateBtn(false));
+
+        const attemptPlay = () => {
+          bgVideo.muted = true;
+          const p = bgVideo.play();
+          if (p !== undefined) {
+            p.then(() => {
+              updateBtn(true);
+            }).catch(() => {
+              // Browser policy (e.g. Brave Shields) blocked unprompted autoplay
+              updateBtn(false);
+              const unlockAutoplay = () => {
+                bgVideo.muted = true;
+                bgVideo.play().then(() => updateBtn(true)).catch(() => {});
+                ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+                  window.removeEventListener(evt, unlockAutoplay);
+                });
+              };
+              ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+                window.addEventListener(evt, unlockAutoplay, { once: true, passive: true });
+              });
+            });
+          }
+        };
+
+        attemptPlay();
+        window.addEventListener('load', () => {
+          if (bgVideo.paused) attemptPlay();
         });
+
+        if (videoToggleBtn) {
+          videoToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bgVideo.paused) {
+              bgVideo.play().then(() => {
+                showToast('Field drone video playing');
+              }).catch(() => {});
+            } else {
+              bgVideo.pause();
+              showToast('Background video paused');
+            }
+          });
+        }
       }
     });
   </script>

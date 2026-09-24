@@ -30,8 +30,8 @@
   <!-- Atmospheric Golden Wheat Field Background Video -->
   <div class="page-video-bg-container">
     <video class="page-bg-video" id="auth-bg-video" autoplay muted loop playsinline poster="farm-bg.jpg">
-      <source src="videos/wheat-field-bg.webm" type="video/webm">
       <source src="videos/wheat-field-bg.mp4" type="video/mp4">
+      <source src="videos/wheat-field-bg.webm" type="video/webm">
     </video>
     <div class="page-video-overlay auth-video-overlay"></div>
   </div>
@@ -332,26 +332,66 @@
       initLanguage();
       Auth.init();
 
-      // Atmospheric Wheat Field Video Controller
+      // Atmospheric Wheat Field Video Controller with Autoplay Resilience
       const bgVideo = document.getElementById('auth-bg-video');
       const videoToggleBtn = document.getElementById('auth-video-toggle');
       const videoCtrlIcon = document.getElementById('video-ctrl-icon');
       const videoCtrlLabel = document.getElementById('video-ctrl-label');
 
-      if (bgVideo && videoToggleBtn) {
-        videoToggleBtn.addEventListener('click', () => {
-          if (bgVideo.paused) {
-            bgVideo.play();
-            if (videoCtrlIcon) videoCtrlIcon.textContent = '⏸';
-            if (videoCtrlLabel) videoCtrlLabel.textContent = 'Wheat Field';
-            videoToggleBtn.setAttribute('aria-label', 'Pause background video');
-          } else {
-            bgVideo.pause();
-            if (videoCtrlIcon) videoCtrlIcon.textContent = '▶';
-            if (videoCtrlLabel) videoCtrlLabel.textContent = 'Paused';
-            videoToggleBtn.setAttribute('aria-label', 'Play background video');
+      if (bgVideo) {
+        bgVideo.muted = true;
+        bgVideo.defaultMuted = true;
+        bgVideo.playsInline = true;
+
+        const updateBtn = (playing) => {
+          if (videoCtrlIcon) videoCtrlIcon.textContent = playing ? '⏸' : '▶';
+          if (videoCtrlLabel) videoCtrlLabel.textContent = playing ? 'Wheat Field' : 'Play Video';
+          if (videoToggleBtn) {
+            videoToggleBtn.setAttribute('aria-label', playing ? 'Pause background video' : 'Play background video');
+            videoToggleBtn.title = playing ? 'Pause Golden Wheat Field Video' : 'Play Golden Wheat Field Video';
           }
+        };
+
+        bgVideo.addEventListener('play', () => updateBtn(true));
+        bgVideo.addEventListener('pause', () => updateBtn(false));
+
+        const attemptPlay = () => {
+          bgVideo.muted = true;
+          const p = bgVideo.play();
+          if (p !== undefined) {
+            p.then(() => {
+              updateBtn(true);
+            }).catch(() => {
+              updateBtn(false);
+              const unlockAutoplay = () => {
+                bgVideo.muted = true;
+                bgVideo.play().then(() => updateBtn(true)).catch(() => {});
+                ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+                  window.removeEventListener(evt, unlockAutoplay);
+                });
+              };
+              ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+                window.addEventListener(evt, unlockAutoplay, { once: true, passive: true });
+              });
+            });
+          }
+        };
+
+        attemptPlay();
+        window.addEventListener('load', () => {
+          if (bgVideo.paused) attemptPlay();
         });
+
+        if (videoToggleBtn) {
+          videoToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bgVideo.paused) {
+              bgVideo.play().catch(() => {});
+            } else {
+              bgVideo.pause();
+            }
+          });
+        }
       }
     });
   </script>
