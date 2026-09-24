@@ -135,9 +135,9 @@ export const translations = {
     sendResetSubmit: "Send Reset Link",
 
     // Landing Page Trust Strip & Footer
-    organicCert: "100% Organic Certified",
-    delivered24h: "Delivered Within 24 Hours",
-    familyFarmed: "Family-Farmed Since 1985",
+    organicCert: "Former Assistance",
+    delivered24h: "Easy Interaction to Farmers",
+    familyFarmed: "Benefits According to the Lands Priority",
     zeroWaste: "Zero-Waste Packaging",
     storyTitle: "Our Farming Story",
     storyBody: "Three generations of farming Nashik fields organically. We nourish the soil, harvest naturally, and empower farmers with AI technology.",
@@ -660,7 +660,7 @@ export const translations = {
 export function setLanguage(lang) {
   const effectiveLang = translations[lang] ? lang : 'en';
   Store.set('currentLang', effectiveLang);
-  
+
   try {
     localStorage.setItem('agrovi_language', effectiveLang);
   } catch (e) {
