@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@500;600;700;800&family=Noto+Sans+Tamil:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260924_v6">
+  <link rel="stylesheet" href="styles.css?v=20260925_v2">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
   <link rel="manifest" href="manifest.json">
@@ -354,6 +354,9 @@
 
         bgVideo.addEventListener('play', () => updateBtn(true));
         bgVideo.addEventListener('pause', () => updateBtn(false));
+        bgVideo.addEventListener('canplay', () => {
+          if (bgVideo.paused) attemptPlay();
+        });
 
         const attemptPlay = () => {
           bgVideo.muted = true;
@@ -363,19 +366,23 @@
               updateBtn(true);
             }).catch(() => {
               updateBtn(false);
-              const unlockAutoplay = () => {
-                bgVideo.muted = true;
-                bgVideo.play().then(() => updateBtn(true)).catch(() => {});
-                ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
-                  window.removeEventListener(evt, unlockAutoplay);
-                });
-              };
-              ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
-                window.addEventListener(evt, unlockAutoplay, { once: true, passive: true });
-              });
             });
           }
         };
+
+        // Universal interaction unlocker for strict autoplay blockers
+        const unlockAutoplay = () => {
+          if (bgVideo.paused) {
+            bgVideo.muted = true;
+            bgVideo.play().then(() => updateBtn(true)).catch(() => {});
+          }
+          ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+            window.removeEventListener(evt, unlockAutoplay);
+          });
+        };
+        ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+          window.addEventListener(evt, unlockAutoplay, { once: true, passive: true });
+        });
 
         attemptPlay();
         window.addEventListener('load', () => {

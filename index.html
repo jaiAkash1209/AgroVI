@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Mukta:wght@500;600;700;800&family=Noto+Sans+Tamil:wght@500;600;700&family=Noto+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260924_v6">
+  <link rel="stylesheet" href="styles.css?v=20260925_v2">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
   <link rel="manifest" href="manifest.json">
@@ -29,6 +29,22 @@
 </head>
 
 <body class="public-page-body">
+
+  <!-- Cinematic Aerial Drone Crop Scan Video across Entire Landing Page -->
+  <div class="page-video-bg-container">
+    <video class="page-bg-video" id="hero-bg-video" autoplay muted loop playsinline poster="farm-bg.jpg">
+      <source src="videos/farm-drone-bg.mp4" type="video/mp4">
+      <source src="videos/farm-drone-bg.webm" type="video/webm">
+    </video>
+    <div class="page-video-overlay index-video-overlay"></div>
+  </div>
+
+  <!-- Floating Video Control Button (Fixed Bottom-Right) -->
+  <button id="hero-video-toggle" class="floating-video-ctrl-btn" aria-label="Pause background video"
+    title="Pause or Play Drone Video">
+    <span class="video-ctrl-icon" id="video-ctrl-icon">⏸</span>
+    <span class="video-ctrl-label" id="video-ctrl-label">Live Video</span>
+  </button>
 
   <!-- Top Utility Bar -->
   <div class="top-bar">
@@ -92,12 +108,7 @@
   </header>
 
   <!-- Hero Section with Background Drone Video -->
-  <section class="hero hero-public">
-    <video class="hero-bg-video" id="hero-bg-video" autoplay muted loop playsinline poster="farm-bg.jpg">
-      <source src="videos/farm-drone-bg.mp4" type="video/mp4">
-      <source src="videos/farm-drone-bg.webm" type="video/webm">
-    </video>
-    <div class="hero-video-overlay"></div>
+  <section class ="hero hero-public">
     <div class="container hero-content text-center">
       <span class="pill-badge">Precision Agriculture & IoT Telemetry</span>
       <h1 class="hero-title">Empower Your Farm with Precision AI & IoT Telemetry</h1>
@@ -108,13 +119,6 @@
         <a href="login.html?tab=register" class="btn btn-secondary btn-large" data-i18n="signUpBtn">Sign Up Now</a>
       </div>
     </div>
-
-    <!-- Floating Video Control Button -->
-    <button id="hero-video-toggle" class="floating-video-ctrl-btn" aria-label="Pause background video"
-      title="Pause or Play Drone Video">
-      <span class="video-ctrl-icon" id="video-ctrl-icon">⏸</span>
-      <span class="video-ctrl-label" id="video-ctrl-label">Live Video</span>
-    </button>
   </section>
 
   <!-- Trust Strip -->
@@ -415,6 +419,9 @@
 
         bgVideo.addEventListener('play', () => updateBtn(true));
         bgVideo.addEventListener('pause', () => updateBtn(false));
+        bgVideo.addEventListener('canplay', () => {
+          if (bgVideo.paused) attemptPlay();
+        });
 
         const attemptPlay = () => {
           bgVideo.muted = true;
@@ -423,21 +430,24 @@
             p.then(() => {
               updateBtn(true);
             }).catch(() => {
-              // Browser policy (e.g. Brave Shields) blocked unprompted autoplay
               updateBtn(false);
-              const unlockAutoplay = () => {
-                bgVideo.muted = true;
-                bgVideo.play().then(() => updateBtn(true)).catch(() => {});
-                ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
-                  window.removeEventListener(evt, unlockAutoplay);
-                });
-              };
-              ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
-                window.addEventListener(evt, unlockAutoplay, { once: true, passive: true });
-              });
             });
           }
         };
+
+        // Universal interaction unlocker for strict autoplay blockers (e.g. Brave Shields)
+        const unlockAutoplay = () => {
+          if (bgVideo.paused) {
+            bgVideo.muted = true;
+            bgVideo.play().then(() => updateBtn(true)).catch(() => { });
+          }
+          ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+            window.removeEventListener(evt, unlockAutoplay);
+          });
+        };
+        ['pointerdown', 'touchstart', 'click', 'scroll', 'keydown'].forEach(evt => {
+          window.addEventListener(evt, unlockAutoplay, { once: true, passive: true });
+        });
 
         attemptPlay();
         window.addEventListener('load', () => {
@@ -450,7 +460,7 @@
             if (bgVideo.paused) {
               bgVideo.play().then(() => {
                 showToast('Field drone video playing');
-              }).catch(() => {});
+              }).catch(() => { });
             } else {
               bgVideo.pause();
               showToast('Background video paused');

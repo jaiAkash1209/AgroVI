@@ -273,14 +273,28 @@ body {
 
 /* === 4. TRUST STRIP === */
 .trust-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
   background: var(--bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 18px 24px;
   margin: 24px 0;
+  box-shadow: 0 4px 18px rgba(0, 20, 10, 0.08);
+}
+.trust-strip-inner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .trust-strip-inner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .trust-strip-inner {
+    grid-template-columns: 1fr;
+  }
 }
 .trust-item { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 13px; color: var(--color-primary); }
 .trust-icon { font-size: 20px; }
@@ -363,8 +377,14 @@ body {
 
 /* ============================================ MULTI-PAGE & DASHBOARD ENHANCEMENTS ============================================ */
 
-/* Clean Background with Visible Farm Imagery & Solid Crisp Cards */
-body.public-page-body, body.auth-page-body, body.dashboard-page-body {
+/* Multi-Page Canvas Background System */
+body.public-page-body,
+body.auth-page-body {
+  background: transparent !important;
+  min-height: 100vh;
+}
+
+body.dashboard-page-body {
   background: var(--bg-body-overlay), url('farm-bg.jpg') center center / cover fixed no-repeat;
   min-height: 100vh;
 }
@@ -401,18 +421,12 @@ body.public-page-body, body.auth-page-body, body.dashboard-page-body {
 /* Public Hero Section with Background Video */
 .hero-public {
   position: relative;
-  background-color: #0b1f11;
-  background-image: linear-gradient(rgba(10, 30, 14, 0.70), rgba(10, 30, 14, 0.84)), url('farm-bg.jpg');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
+  background: transparent !important;
   color: #ffffff;
   padding: 72px 24px 80px;
   border-radius: var(--radius-lg);
   margin: 20px auto 32px;
-  box-shadow: var(--shadow-elevated);
   text-align: center;
-  overflow: hidden;
 }
 
 /* Background HTML5 Video */
@@ -519,18 +533,7 @@ body.public-page-body, body.auth-page-body, body.dashboard-page-body {
   line-height: 1;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-bg-video,
-  .page-bg-video {
-    display: none !important;
-  }
-  .hero-video-ctrl-btn,
-  .floating-video-ctrl-btn {
-    display: none !important;
-  }
-}
-
-/* Page-Level Background Video System (Index Hero & Auth Golden Wheat) */
+/* Page-Level Background Video System (Index Hero Drone & Auth Golden Wheat) */
 .page-video-bg-container {
   position: fixed;
   top: 0;
@@ -540,20 +543,7 @@ body.public-page-body, body.auth-page-body, body.dashboard-page-body {
   overflow: hidden;
   z-index: 0;
   pointer-events: none;
-}
-
-body.auth-page-body {
-  background: transparent !important;
-  min-height: 100vh;
-}
-
-body.dashboard-page-body {
-  background: linear-gradient(180deg, rgba(240, 246, 242, 0.40) 0%, rgba(230, 238, 232, 0.58) 100%), url('farm-bg.jpg') center center / cover fixed no-repeat !important;
-  min-height: 100vh;
-}
-
-:root[data-theme="dark"] body.dashboard-page-body {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(11, 17, 30, 0.94) 100%), url('farm-bg.jpg') center center / cover fixed no-repeat !important;
+  background: #0b1f11 url('farm-bg.jpg') center center / cover no-repeat;
 }
 
 /* Ensure all page content containers stack strictly ABOVE background videos & scrims */
@@ -600,6 +590,15 @@ footer {
 
 :root[data-theme="dark"] .auth-video-overlay {
   background: radial-gradient(circle at center, rgba(8, 14, 20, 0.78) 0%, rgba(4, 7, 12, 0.94) 100%);
+}
+
+/* Index Page Video Scrim: Vibrant Emerald Drone Field Filter */
+.index-video-overlay {
+  background: linear-gradient(180deg, rgba(8, 24, 12, 0.35) 0%, rgba(6, 18, 9, 0.48) 50%, rgba(4, 12, 7, 0.65) 100%);
+}
+
+:root[data-theme="dark"] .index-video-overlay {
+  background: linear-gradient(180deg, rgba(6, 16, 10, 0.58) 0%, rgba(4, 10, 6, 0.72) 50%, rgba(2, 6, 4, 0.85) 100%);
 }
 
 /* Dashboard Video Scrim: Ambient Farm Tint to make Crisp White Cards Pop */
